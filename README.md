@@ -15,7 +15,7 @@ gitpod ~/linux_build $ ls -la *deb
 ```
 you need to copy them e.g. to the USB drive or copy directly to the micro SD card with a Raspberry Pi4 image. you can skip the next step and go to [Deploy chapter](#Deploy-a-new-kernel-on-RPI4)
 # Raspberry Pi 4 kernel build
-Ubuntu 20.02 x86_64 docker container is used to cross-compile a kernel. There is a Dockerfile which can be used for that purpose. If you want to build it using gitpod you need to run https://gitpod.io/#https://github.com/razr/RTWG. It will spawn a docker container automatically for you.
+Ubuntu 20.04 x86_64 docker container is used to cross-compile a kernel. There is a Dockerfile which can be used for that purpose. If you want to build it using gitpod you need to run https://gitpod.io/#https://github.com/razr/RTWG. It will spawn a docker container automatically for you.
 ## create and run a docker container
 For the local build:
 ```bash
@@ -103,11 +103,11 @@ gitpod ~/linux_build/linux-raspi-5.4.0 $ ls -la ../*.deb
 # Deploy a new kernel on RPI4
 ## download and install Ubuntu 20.04 image 
 Follow these links to download and install Ubuntu 20.04 on your RPI4
-https://ubuntu.com/download/raspberry-pi
-https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04&architecture=arm64+raspi
-https://ubuntu.com/tutorials/create-an-ubuntu-image-for-a-raspberry-pi-on-ubuntu#2-on-your-ubuntu-machine
+* https://ubuntu.com/download/raspberry-pi
+* https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04&architecture=arm64+raspi
+* https://ubuntu.com/tutorials/create-an-ubuntu-image-for-a-raspberry-pi-on-ubuntu#2-on-your-ubuntu-machine
 ```bash
-# initial username and passwords
+# initial username and password
 ubuntu/ubuntu
 ```
 ## update your system
