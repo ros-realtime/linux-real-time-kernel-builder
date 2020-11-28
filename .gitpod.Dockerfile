@@ -8,7 +8,7 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
     apt-get update && apt-get install -q -y tzdata && rm -rf /var/lib/apt/lists/*
 
 ARG ARCH=arm64
-ARG UNAME_R=5.4.0-1013-raspi
+ARG UNAME_R=5.4.0-1022-raspi
 ARG triple=aarch64-linux-gnu
 
 # setup arch
