@@ -117,7 +117,6 @@ $ uname -a
 Linux ubuntu 5.4.0-1008-raspi #08 SMP Sat Jun 15 11:15:22 CEST 2020 aarch64 aarch64 aarch64 GNU/Linux
 $ sudo apt-get update && apt-get upgrade
 $ uname -a
-$ uname -a
 Linux ubuntu 5.4.0-1013-raspi #13 SMP Sat Jul 16 21:00:11 CEST 2020 aarch64 aarch64 aarch64 GNU/Linux
 ```
 ## copy a new kernel to your system and install it
