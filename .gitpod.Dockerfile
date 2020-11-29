@@ -1,3 +1,21 @@
+# docker image to build an RT kernel for the RPI4 based on Ubuntu 20.04 RPI4 image
+#
+# $ docker build -t rtwg-image .
+# $ docker run -it rtwg-image bash 
+#
+# and then inside the docker
+# $ $HOME/linux_build && cd `ls -d */`
+# $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
+# 
+# gitpod ~/linux_build/linux-raspi-5.4.0 $ ls -la ../*.deb
+# -rw-r--r-- 1 gitpod gitpod  11278252 Nov 29 14:01 ../linux-headers-5.4.65-rt38_5.4.65-rt38-1_arm64.deb
+# -rw-r--r-- 1 gitpod gitpod 486149956 Nov 29 14:04 ../linux-image-5.4.65-rt38-dbg_5.4.65-rt38-1_arm64.deb
+# -rw-r--r-- 1 gitpod gitpod  38504756 Nov 29 14:01 ../linux-image-5.4.65-rt38_5.4.65-rt38-1_arm64.deb
+# -rw-r--r-- 1 gitpod gitpod   1054624 Nov 29 14:01 ../linux-libc-dev_5.4.65-rt38-1_arm64.deb
+#
+# copy deb packages to the host, or directly to the RPI4 target
+# $ scp ../*.deb user@172.17.0.1:/home/user/.
+
 FROM gitpod/workspace-full
 
 USER root
@@ -9,6 +27,7 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
 
 ARG ARCH=arm64
 ARG UNAME_R=5.4.0-1022-raspi
+ARG RT_PATCH=5.4.66-rt38
 ARG triple=aarch64-linux-gnu
 
 # setup arch
@@ -33,13 +52,45 @@ RUN apt-get update && apt-get build-dep -q -y linux linux-image-${UNAME_R} \
     fakeroot \
     && rm -rf /var/lib/apt/lists/*
 
+# install buildinfo
+RUN apt-get update && apt-get install -q -y linux-buildinfo-${UNAME_R} \
+    && rm -rf /var/lib/apt/lists/*
+
 USER gitpod
 # install linux sources
 RUN mkdir $HOME/linux_build && cd $HOME/linux_build \ 
     && sudo apt-get update && apt-get source linux-image-${UNAME_R}
+
+# download and unzip RT patch, the closest to the RPI kernel version
+# check version with
+# ~/linux_build/linux-raspi-5.4.0 $ make kernelversion
+RUN cd $HOME/linux_build \
+    && wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-${RT_PATCH}.patch.gz \
+    && gunzip patch-${RT_PATCH}.patch.gz
+
+# patch RPI kernel 
+RUN cd $HOME/linux_build && cd `ls -d */` \
+    && patch -p1 < ../patch-${RT_PATCH}.patch
 
 # setup build environment
 RUN export $(dpkg-architecture -a${ARCH}) && export CROSS_COMPILE=${triple}- \
     && cd $HOME/linux_build && cd `ls -d */` \
     && LANG=C fakeroot debian/rules printenv
 
+# config RPI RT kernel
+# set CONFIG_PREEMPT_RT, CONFIG_NO_HZ_FULL CONFIG_HZ_1000
+# already enabled CONFIG_HIGH_RES_TIMERS, CPU_FREQ_DEFAULT_GOV_PERFORMANCE
+# disable CONFIG_AUFS_FS, it fails to compile
+RUN cd $HOME/linux_build && cd `ls -d */` \
+    && cp /usr/lib/linux/${UNAME_R}/config .config \
+    && ./scripts/config -d CONFIG_PREEMPT \
+    && ./scripts/config -e CONFIG_PREEMPT_RT \
+    && ./scripts/config -d CONFIG_NO_HZ_IDLE \
+    && ./scripts/config -e CONFIG_NO_HZ_FULL \
+    && ./scripts/config -d CONFIG_HZ_250 \
+    && ./scripts/config -e CONFIG_HZ_1000 \
+    && ./scripts/config -d CONFIG_AUFS_FS \
+    && yes '' | make ARCH=${ARCH} CROSS_COMPILE=${triple}- oldconfig 
+
+RUN cd $HOME/linux_build && cd `ls -d */` \
+    && fakeroot debian/rules clean
