@@ -2,14 +2,15 @@
 The goal is to create a Ubuntu based system with RT Linux kernel to test real-time ROS2 stack. Two boards are proposed
 * Raspberry Pi 4 B+ board (ARMv8)
 * Intel UP2 board (x86_64)
-
+# Intel UP2 board RT kernel build
+See https://index.ros.org/doc/ros2/Tutorials/Building-Realtime-rt_preempt-kernel-for-ROS-2/
 # Raspberry PI 4 RT kernel build
-Ubuntu 20.04 x86_64 docker container is used to cross-compile a new kernel. There is a Dockerfile which can be used for that purpose. If you want to build it using gitpod you need to run https://gitpod.io/#https://github.com/razr/RTWG. It will spawn a docker container automatically for you.
+Ubuntu 20.04 x86_64 docker container is used to cross-compile a new kernel. There is a Dockerfile which can be used for that purpose. If you want to build it using gitpod you need to run https://gitpod.io/#https://github.com/ros-realtime/rt-kernel-docker-builder. It will spawn a docker container automatically for you.
 ## build and run docker container
 For the local build:
 ```bash
-$ git clone https://github.com/razr/RTWG.git
-$ cd RTWG
+$ git clone https://github.com/ros-realtime/rt-kernel-docker-builder
+$ cd rt-kernel-docker-builder
 $ docker build -t rtwg-image .
 $ docker run -t -i rtwg-image bash
 ```
