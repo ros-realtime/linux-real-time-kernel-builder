@@ -102,7 +102,7 @@ Assumed you have already copied all *.deb packages to your ```$HOME/ubuntu``` di
 $ cd $HOME/ubuntu
 $ sudo dpkg -i *.deb
 ```
-## adjust vmliuz and initrd.img links
+## adjust vmlinuz and initrd.img links
 There is an extra step in compare to the x86_64 install (why is that?)
 ```bash
 $ cd /boot
