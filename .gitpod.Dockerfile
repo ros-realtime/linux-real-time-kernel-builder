@@ -8,10 +8,10 @@
 # $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
 # 
 # gitpod ~/linux_build/linux-raspi-5.4.0 $ ls -la ../*.deb
-# -rw-r--r-- 1 gitpod gitpod  11278252 Nov 29 14:01 ../linux-headers-5.4.65-rt38_5.4.65-rt38-1_arm64.deb
-# -rw-r--r-- 1 gitpod gitpod 486149956 Nov 29 14:04 ../linux-image-5.4.65-rt38-dbg_5.4.65-rt38-1_arm64.deb
-# -rw-r--r-- 1 gitpod gitpod  38504756 Nov 29 14:01 ../linux-image-5.4.65-rt38_5.4.65-rt38-1_arm64.deb
-# -rw-r--r-- 1 gitpod gitpod   1054624 Nov 29 14:01 ../linux-libc-dev_5.4.65-rt38-1_arm64.deb
+# -rw-r--r-- 1 gitpod gitpod  11278252 Nov 29 14:01 ../linux-headers-5.4.86-rt48_5.4.86-rt48-1_arm64.deb
+# -rw-r--r-- 1 gitpod gitpod 486149956 Nov 29 14:04 ../linux-image-5.4.86-rt48-dbg_5.4.86-rt48-1_arm64.deb
+# -rw-r--r-- 1 gitpod gitpod  38504756 Nov 29 14:01 ../linux-image-5.4.86-rt48_5.4.86-rt48-1_arm64.deb
+# -rw-r--r-- 1 gitpod gitpod   1054624 Nov 29 14:01 ../linux-libc-dev_5.4.86-rt48-1_arm64.deb
 #
 # copy deb packages to the host, or directly to the RPI4 target
 # $ scp ../*.deb user@172.17.0.1:/home/user/.
@@ -26,8 +26,8 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
     apt-get update && apt-get install -q -y tzdata && rm -rf /var/lib/apt/lists/*
 
 ARG ARCH=arm64
-ARG UNAME_R=5.4.0-1022-raspi
-ARG RT_PATCH=5.4.66-rt38
+ARG UNAME_R=5.4.0-1029-raspi
+ARG RT_PATCH=5.4.87-rt48
 ARG triple=aarch64-linux-gnu
 
 # setup arch
