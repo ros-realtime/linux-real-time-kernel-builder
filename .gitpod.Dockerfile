@@ -68,9 +68,9 @@ RUN cd $HOME/linux_build \
     && wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-${RT_PATCH}.patch.gz \
     && gunzip patch-${RT_PATCH}.patch.gz
 
-# patch RPI kernel 
+# patch RPI kernel, do not fail if some patches are skipped
 RUN cd $HOME/linux_build && cd `ls -d */` \
-    && patch -p1 < ../patch-${RT_PATCH}.patch
+    && OUT="$(patch -p1 --forward < ../patch-${RT_PATCH}.patch)" || echo "${OUT}" | grep "Skipping patch" -q || (echo "$OUT" && false);
 
 # setup build environment
 RUN export $(dpkg-architecture -a${ARCH}) && export CROSS_COMPILE=${triple}- \
