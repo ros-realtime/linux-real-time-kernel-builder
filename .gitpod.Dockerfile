@@ -1,6 +1,14 @@
 # docker image to build an RT kernel for the RPI4 based on Ubuntu 20.04 RPI4 image
 #
-# $ docker build -t rtwg-image .
+# it finds and takes the latest raspi image and the closest to it RT patch
+# if the build arguments defined it will build a corresponding version instead
+# $ docker build [--build-args UNAME_R=<raspi release>] [--build-args RT_PATCH=<RT patch>] -t rtwg-image .
+#
+# where <raspi release> is in a form of 5.4.0-1034-raspi, 
+#     see https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=linux-image-5.4&searchon=names
+# and <RT patch> is in a form of 5.4.106-rt54, 
+#     see http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older
+#
 # $ docker run -it rtwg-image bash 
 #
 # and then inside the docker
@@ -26,7 +34,7 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
     apt-get update && apt-get install -q -y tzdata && rm -rf /var/lib/apt/lists/*
 
 ARG ARCH=arm64
-ARG UNAME_R=5.4.0-1034-raspi
+ARG UNAME_R
 ARG RT_PATCH
 ARG triple=aarch64-linux-gnu
 
@@ -45,22 +53,32 @@ RUN apt-get update && apt-get install -q -y \
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
+# find the latest UNAME_R and store it locally for the later usage
+# Example:
+# apt-cache search -n linux-buildinfo-.*-raspi | sort | tail -n 1 | cut -d '-' -f 3-5
+# 5.4.0-1034-raspi
+# if $UNAME_R is set via --build-args, take it
+RUN apt-get update \
+    && if test -z $UNAME_R; then UNAME_R=`apt-cache search -n linux-buildinfo-.*-raspi | sort | tail -n 1 | cut -d '-' -f 3-5`; fi \
+    && echo $UNAME_R > /uname_r \
+    && rm -rf /var/lib/apt/lists/*
+
 # install build deps
-RUN apt-get update && apt-get build-dep -q -y linux linux-image-${UNAME_R} \
+RUN apt-get update && apt-get build-dep -q -y linux linux-image-`cat /uname_r` \
     && apt-get install -q -y \
     libncurses-dev flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf \
     fakeroot \
     && rm -rf /var/lib/apt/lists/*
 
 # install buildinfo
-RUN apt-get update && apt-get install -q -y linux-buildinfo-${UNAME_R} \
+RUN apt-get update && apt-get install -q -y linux-buildinfo-`cat /uname_r` \
     && rm -rf /var/lib/apt/lists/*
 
 USER gitpod
 
 # install linux sources
 RUN mkdir $HOME/linux_build && cd $HOME/linux_build \ 
-    && sudo apt-get update && apt-get source linux-image-${UNAME_R}
+    && sudo apt-get update && apt-get source linux-image-`cat /uname_r`
 
 COPY ./getpatch.sh /getpatch.sh
 
@@ -68,7 +86,7 @@ COPY ./getpatch.sh /getpatch.sh
 # Example:
 # ./getpatch.sh 101
 # 5.4.102-rt53
-# if $RT_PATCH is passed, take it
+# if $RT_PATCH is set via --build-args, take it
 RUN cd $HOME/linux_build && cd `ls -d */` \
     && if test -z $RT_PATCH; then /getpatch.sh `make kernelversion | cut -d '.' -f 3` > $HOME/rt_patch; else echo $RT_PATCH > $HOME/rt_patch; fi
 
@@ -93,7 +111,7 @@ RUN export $(dpkg-architecture -a${ARCH}) && export CROSS_COMPILE=${triple}- \
 # already enabled CONFIG_HIGH_RES_TIMERS, CPU_FREQ_DEFAULT_GOV_PERFORMANCE
 # disable CONFIG_AUFS_FS, it fails to compile
 RUN cd $HOME/linux_build && cd `ls -d */` \
-    && cp /usr/lib/linux/${UNAME_R}/config .config \
+    && cp /usr/lib/linux/`cat /uname_r`/config .config \
     && ./scripts/config -d CONFIG_PREEMPT \
     && ./scripts/config -e CONFIG_PREEMPT_RT \
     && ./scripts/config -d CONFIG_NO_HZ_IDLE \

@@ -11,7 +11,17 @@ For the local build:
 ```bash
 $ git clone https://github.com/ros-realtime/rt-kernel-docker-builder
 $ cd rt-kernel-docker-builder
-$ docker build -t rtwg-image .
+```
+It finds and takes the latest raspi image and the closest to it RT patch. If the build arguments defined it will build a corresponding version instead.
+
+```bash
+$ docker build [--build-args UNAME_R=<raspi release>] [--build-args RT_PATCH=<RT patch>] -t rtwg-image .
+```
+
+where ```<raspi release>``` is in a form of ```5.4.0-1034-raspi```,  see [Ubuntu raspi Linux kernels](https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=linux-image-5.4&searchon=names)
+and ```<RT patch>``` is in a form of ```5.4.106-rt54```, see [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
+
+```bash
 $ docker run -t -i rtwg-image bash
 ```
 ## setup a build environment
