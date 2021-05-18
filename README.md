@@ -34,13 +34,11 @@ Container comes with cross-compilation tools installed, and a ready-to-build RT 
 ## Kernel configuration
 Additionally RT kernel configured as
 ```bash
-$ ./scripts/config -d CONFIG_PREEMPT \
-$ ./scripts/config -e CONFIG_PREEMPT_RT \
-$ ./scripts/config -d CONFIG_NO_HZ_IDLE \
-$ ./scripts/config -e CONFIG_NO_HZ_FULL \
-$ ./scripts/config -d CONFIG_HZ_250 \
-$ ./scripts/config -e CONFIG_HZ_1000 \
-$ ./scripts/config -d CONFIG_AUFS_FS \
+$ cat .config-fragment
+CONFIG_PREEMPT_RT=y
+CONFIG_NO_HZ_FULL=y
+CONFIG_HZ_1000=y
+# CONFIG_AUFS_FS is not set
 ```
 which corresponds to the following
 ```bash

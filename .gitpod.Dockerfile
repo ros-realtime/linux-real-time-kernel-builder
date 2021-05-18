@@ -106,20 +106,13 @@ RUN export $(dpkg-architecture -a${ARCH}) && export CROSS_COMPILE=${triple}- \
     && cd $HOME/linux_build && cd `ls -d */` \
     && LANG=C fakeroot debian/rules printenv
 
-# config RPI RT kernel
-# set CONFIG_PREEMPT_RT, CONFIG_NO_HZ_FULL CONFIG_HZ_1000
-# already enabled CONFIG_HIGH_RES_TIMERS, CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-# disable CONFIG_AUFS_FS, it fails to compile
+WORKDIR $HOME
+COPY ./.config-fragment linux_build/.
+
+# config RT kernel and merge config fragment
 RUN cd $HOME/linux_build && cd `ls -d */` \
     && cp /usr/lib/linux/`cat /uname_r`/config .config \
-    && ./scripts/config -d CONFIG_PREEMPT \
-    && ./scripts/config -e CONFIG_PREEMPT_RT \
-    && ./scripts/config -d CONFIG_NO_HZ_IDLE \
-    && ./scripts/config -e CONFIG_NO_HZ_FULL \
-    && ./scripts/config -d CONFIG_HZ_250 \
-    && ./scripts/config -e CONFIG_HZ_1000 \
-    && ./scripts/config -d CONFIG_AUFS_FS \
-    && yes '' | make ARCH=${ARCH} CROSS_COMPILE=${triple}- oldconfig 
+    && ARCH=${ARCH} CROSS_COMPILE=${triple}- ./scripts/kconfig/merge_config.sh .config $HOME/linux_build/.config-fragment
 
 RUN cd $HOME/linux_build && cd `ls -d */` \
     && fakeroot debian/rules clean
