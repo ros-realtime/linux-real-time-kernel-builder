@@ -27,7 +27,7 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
 
 ARG ARCH=arm64
 ARG UNAME_R=5.4.0-1034-raspi
-ARG RT_PATCH=5.4.102-rt53
+ARG RT_PATCH
 ARG triple=aarch64-linux-gnu
 
 # setup arch
@@ -57,20 +57,31 @@ RUN apt-get update && apt-get install -q -y linux-buildinfo-${UNAME_R} \
     && rm -rf /var/lib/apt/lists/*
 
 USER gitpod
+
 # install linux sources
 RUN mkdir $HOME/linux_build && cd $HOME/linux_build \ 
     && sudo apt-get update && apt-get source linux-image-${UNAME_R}
+
+COPY ./getpatch.sh /getpatch.sh
+
+# get the nearest RT patch to the kernel SUBLEVEL
+# Example:
+# ./getpatch.sh 101
+# 5.4.102-rt53
+# if $RT_PATCH is passed, take it
+RUN cd $HOME/linux_build && cd `ls -d */` \
+    && if test -z $RT_PATCH; then /getpatch.sh `make kernelversion | cut -d '.' -f 3` > $HOME/rt_patch; else echo $RT_PATCH > $HOME/rt_patch; fi
 
 # download and unzip RT patch, the closest to the RPI kernel version
 # check version with
 # ~/linux_build/linux-raspi-5.4.0 $ make kernelversion
 RUN cd $HOME/linux_build \
-    && wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-${RT_PATCH}.patch.gz \
-    && gunzip patch-${RT_PATCH}.patch.gz
+    && wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-`cat $HOME/rt_patch`.patch.gz \
+    && gunzip patch-`cat $HOME/rt_patch`.patch.gz
 
 # patch RPI kernel, do not fail if some patches are skipped
 RUN cd $HOME/linux_build && cd `ls -d */` \
-    && OUT="$(patch -p1 --forward < ../patch-${RT_PATCH}.patch)" || echo "${OUT}" | grep "Skipping patch" -q || (echo "$OUT" && false);
+    && OUT="$(patch -p1 --forward < ../patch-`cat $HOME/rt_patch`.patch)" || echo "${OUT}" | grep "Skipping patch" -q || (echo "$OUT" && false);
 
 # setup build environment
 RUN export $(dpkg-architecture -a${ARCH}) && export CROSS_COMPILE=${triple}- \
