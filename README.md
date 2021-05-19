@@ -11,7 +11,17 @@ For the local build:
 ```bash
 $ git clone https://github.com/ros-realtime/rt-kernel-docker-builder
 $ cd rt-kernel-docker-builder
-$ docker build -t rtwg-image .
+```
+It finds and takes the latest raspi image and the closest to it RT patch. If the build arguments defined it will build a corresponding version instead.
+
+```bash
+$ docker build [--build-args UNAME_R=<raspi release>] [--build-args RT_PATCH=<RT patch>] -t rtwg-image .
+```
+
+where ```<raspi release>``` is in a form of ```5.4.0-1034-raspi```,  see [Ubuntu raspi Linux kernels](https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=linux-image-5.4&searchon=names)
+and ```<RT patch>``` is in a form of ```5.4.106-rt54```, see [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
+
+```bash
 $ docker run -t -i rtwg-image bash
 ```
 ## setup a build environment
@@ -24,13 +34,11 @@ Container comes with cross-compilation tools installed, and a ready-to-build RT 
 ## Kernel configuration
 Additionally RT kernel configured as
 ```bash
-$ ./scripts/config -d CONFIG_PREEMPT \
-$ ./scripts/config -e CONFIG_PREEMPT_RT \
-$ ./scripts/config -d CONFIG_NO_HZ_IDLE \
-$ ./scripts/config -e CONFIG_NO_HZ_FULL \
-$ ./scripts/config -d CONFIG_HZ_250 \
-$ ./scripts/config -e CONFIG_HZ_1000 \
-$ ./scripts/config -d CONFIG_AUFS_FS \
+$ cat .config-fragment
+CONFIG_PREEMPT_RT=y
+CONFIG_NO_HZ_FULL=y
+CONFIG_HZ_1000=y
+# CONFIG_AUFS_FS is not set
 ```
 which corresponds to the following
 ```bash
@@ -77,10 +85,10 @@ $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
 You need 32GB free disk space to build it, it takes a while, and the results are located:
 ```bash
 gitpod ~/linux_build/linux-raspi-5.4.0 $ ls -la ../*.deb
--rw-r--r-- 1 gitpod gitpod  11278252 Nov 29 14:01 ../linux-headers-5.4.86-rt48_5.4.86-rt48-1_arm64.deb
--rw-r--r-- 1 gitpod gitpod 486149956 Nov 29 14:04 ../linux-image-5.4.86-rt48-dbg_5.4.86-rt48-1_arm64.deb
--rw-r--r-- 1 gitpod gitpod  38504756 Nov 29 14:01 ../linux-image-5.4.86-rt48_5.4.86-rt48-1_arm64.deb
--rw-r--r-- 1 gitpod gitpod   1054624 Nov 29 14:01 ../linux-libc-dev_5.4.86-rt48-1_arm64.deb
+-rw-r--r-- 1 gitpod gitpod  11430676 May 17 14:40 ../linux-headers-5.4.101-rt53_5.4.101-rt53-1_arm64.deb
+-rw-r--r-- 1 gitpod gitpod 487338132 May 17 14:40 ../linux-image-5.4.101-rt53-dbg_5.4.101-rt53-1_arm64.deb
+-rw-r--r-- 1 gitpod gitpod  39355940 May 17 14:40 ../linux-image-5.4.101-rt53_5.4.101-rt53-1_arm64.deb
+-rw-r--r-- 1 gitpod gitpod   1055272 May 17 14:40 ../linux-libc-dev_5.4.101-rt53-1_arm64.deb
 ```
 # Deploy a new kernel on RPI4
 ## download and install Ubuntu 20.04 image
@@ -107,10 +115,10 @@ $ sudo dpkg -i *.deb
 There is an extra step in compare to the x86_64 install (why is that?)
 ```bash
 $ cd /boot
-$ sudo ln -s -f vmlinuz-5.4.86-rt48 vmlinuz
-$ sudo ln -s -f vmlinuz-5.4.0-1029-raspi vmlinuz.old
-$ sudo ln -s -f initrd.img-5.4.86-rt48 initrd.img
-$ sudo ln -s -f initrd.img-5.4.0-1029-raspi initrd.img.old
+$ sudo ln -s -f vmlinuz-5.4.101-rt53 vmlinuz
+$ sudo ln -s -f vmlinuz-5.4.0-1034-raspi vmlinuz.old
+$ sudo ln -s -f initrd.img-5.4.101-rt53 initrd.img
+$ sudo ln -s -f initrd.img-5.4.0-1034-raspi initrd.img.old
 $ sudo cp vmlinuz firmware/vmlinuz
 $ sudo cp vmlinuz firmware/vmlinuz.bak
 $ sudo cp initrd.img firmware/initrd.img
@@ -121,5 +129,5 @@ $ sudo reboot
 After reboot you should see a new RT kernel installed
 ```bash
 ubuntu@ubuntu:~$ uname -a
-Linux ubuntu 5.4.86-rt48 #1 SMP PREEMPT_RT Sun Nov 15 22:44:33 UTC 2020 aarch64 aarch64 aarch64 GNU/Linux
+Linux ubuntu 5.4.101-rt53 #1 SMP PREEMPT_RT Mon May 17 12:10:16 UTC 2021 aarch64 aarch64 aarch64 GNU/Linux
 ```

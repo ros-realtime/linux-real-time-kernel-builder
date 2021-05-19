@@ -1,6 +1,14 @@
 # docker image to build an RT kernel for the RPI4 based on Ubuntu 20.04 RPI4 image
 #
-# $ docker build -t rtwg-image .
+# it finds and takes the latest raspi image and the closest to it RT patch
+# if the build arguments defined it will build a corresponding version instead
+# $ docker build [--build-args UNAME_R=<raspi release>] [--build-args RT_PATCH=<RT patch>] -t rtwg-image .
+#
+# where <raspi release> is in a form of 5.4.0-1034-raspi, 
+#     see https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=linux-image-5.4&searchon=names
+# and <RT patch> is in a form of 5.4.106-rt54, 
+#     see http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older
+#
 # $ docker run -it rtwg-image bash 
 #
 # and then inside the docker
@@ -8,10 +16,10 @@
 # $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
 # 
 # gitpod ~/linux_build/linux-raspi-5.4.0 $ ls -la ../*.deb
-# -rw-r--r-- 1 gitpod gitpod  11278252 Nov 29 14:01 ../linux-headers-5.4.86-rt48_5.4.86-rt48-1_arm64.deb
-# -rw-r--r-- 1 gitpod gitpod 486149956 Nov 29 14:04 ../linux-image-5.4.86-rt48-dbg_5.4.86-rt48-1_arm64.deb
-# -rw-r--r-- 1 gitpod gitpod  38504756 Nov 29 14:01 ../linux-image-5.4.86-rt48_5.4.86-rt48-1_arm64.deb
-# -rw-r--r-- 1 gitpod gitpod   1054624 Nov 29 14:01 ../linux-libc-dev_5.4.86-rt48-1_arm64.deb
+# -rw-r--r-- 1 gitpod gitpod  11430676 May 17 14:40 ../linux-headers-5.4.101-rt53_5.4.101-rt53-1_arm64.deb
+# -rw-r--r-- 1 gitpod gitpod 487338132 May 17 14:40 ../linux-image-5.4.101-rt53-dbg_5.4.101-rt53-1_arm64.deb
+# -rw-r--r-- 1 gitpod gitpod  39355940 May 17 14:40 ../linux-image-5.4.101-rt53_5.4.101-rt53-1_arm64.deb
+# -rw-r--r-- 1 gitpod gitpod   1055272 May 17 14:40 ../linux-libc-dev_5.4.101-rt53-1_arm64.deb
 #
 # copy deb packages to the host, or directly to the RPI4 target
 # $ scp ../*.deb user@172.17.0.1:/home/user/.
@@ -26,8 +34,8 @@ RUN echo 'Etc/UTC' > /etc/timezone && \
     apt-get update && apt-get install -q -y tzdata && rm -rf /var/lib/apt/lists/*
 
 ARG ARCH=arm64
-ARG UNAME_R=5.4.0-1029-raspi
-ARG RT_PATCH=5.4.87-rt48
+ARG UNAME_R
+ARG RT_PATCH
 ARG triple=aarch64-linux-gnu
 
 # setup arch
@@ -45,52 +53,66 @@ RUN apt-get update && apt-get install -q -y \
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
 
+# find the latest UNAME_R and store it locally for the later usage
+# Example:
+# apt-cache search -n linux-buildinfo-.*-raspi | sort | tail -n 1 | cut -d '-' -f 3-5
+# 5.4.0-1034-raspi
+# if $UNAME_R is set via --build-args, take it
+RUN apt-get update \
+    && if test -z $UNAME_R; then UNAME_R=`apt-cache search -n linux-buildinfo-.*-raspi | sort | tail -n 1 | cut -d '-' -f 3-5`; fi \
+    && echo $UNAME_R > /uname_r \
+    && rm -rf /var/lib/apt/lists/*
+
 # install build deps
-RUN apt-get update && apt-get build-dep -q -y linux linux-image-${UNAME_R} \
+RUN apt-get update && apt-get build-dep -q -y linux linux-image-`cat /uname_r` \
     && apt-get install -q -y \
     libncurses-dev flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf \
     fakeroot \
     && rm -rf /var/lib/apt/lists/*
 
 # install buildinfo
-RUN apt-get update && apt-get install -q -y linux-buildinfo-${UNAME_R} \
+RUN apt-get update && apt-get install -q -y linux-buildinfo-`cat /uname_r` \
     && rm -rf /var/lib/apt/lists/*
 
 USER gitpod
+
 # install linux sources
 RUN mkdir $HOME/linux_build && cd $HOME/linux_build \ 
-    && sudo apt-get update && apt-get source linux-image-${UNAME_R}
+    && sudo apt-get update && apt-get source linux-image-`cat /uname_r`
+
+COPY ./getpatch.sh /getpatch.sh
+
+# get the nearest RT patch to the kernel SUBLEVEL
+# Example:
+# ./getpatch.sh 101
+# 5.4.102-rt53
+# if $RT_PATCH is set via --build-args, take it
+RUN cd $HOME/linux_build && cd `ls -d */` \
+    && if test -z $RT_PATCH; then /getpatch.sh `make kernelversion | cut -d '.' -f 3` > $HOME/rt_patch; else echo $RT_PATCH > $HOME/rt_patch; fi
 
 # download and unzip RT patch, the closest to the RPI kernel version
 # check version with
 # ~/linux_build/linux-raspi-5.4.0 $ make kernelversion
 RUN cd $HOME/linux_build \
-    && wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-${RT_PATCH}.patch.gz \
-    && gunzip patch-${RT_PATCH}.patch.gz
+    && wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-`cat $HOME/rt_patch`.patch.gz \
+    && gunzip patch-`cat $HOME/rt_patch`.patch.gz
 
-# patch RPI kernel 
+# patch RPI kernel, do not fail if some patches are skipped
 RUN cd $HOME/linux_build && cd `ls -d */` \
-    && patch -p1 < ../patch-${RT_PATCH}.patch
+    && OUT="$(patch -p1 --forward < ../patch-`cat $HOME/rt_patch`.patch)" || echo "${OUT}" | grep "Skipping patch" -q || (echo "$OUT" && false);
 
 # setup build environment
 RUN export $(dpkg-architecture -a${ARCH}) && export CROSS_COMPILE=${triple}- \
     && cd $HOME/linux_build && cd `ls -d */` \
     && LANG=C fakeroot debian/rules printenv
 
-# config RPI RT kernel
-# set CONFIG_PREEMPT_RT, CONFIG_NO_HZ_FULL CONFIG_HZ_1000
-# already enabled CONFIG_HIGH_RES_TIMERS, CPU_FREQ_DEFAULT_GOV_PERFORMANCE
-# disable CONFIG_AUFS_FS, it fails to compile
+WORKDIR $HOME
+COPY ./.config-fragment linux_build/.
+
+# config RT kernel and merge config fragment
 RUN cd $HOME/linux_build && cd `ls -d */` \
-    && cp /usr/lib/linux/${UNAME_R}/config .config \
-    && ./scripts/config -d CONFIG_PREEMPT \
-    && ./scripts/config -e CONFIG_PREEMPT_RT \
-    && ./scripts/config -d CONFIG_NO_HZ_IDLE \
-    && ./scripts/config -e CONFIG_NO_HZ_FULL \
-    && ./scripts/config -d CONFIG_HZ_250 \
-    && ./scripts/config -e CONFIG_HZ_1000 \
-    && ./scripts/config -d CONFIG_AUFS_FS \
-    && yes '' | make ARCH=${ARCH} CROSS_COMPILE=${triple}- oldconfig 
+    && cp /usr/lib/linux/`cat /uname_r`/config .config \
+    && ARCH=${ARCH} CROSS_COMPILE=${triple}- ./scripts/kconfig/merge_config.sh .config $HOME/linux_build/.config-fragment
 
 RUN cd $HOME/linux_build && cd `ls -d */` \
     && fakeroot debian/rules clean
