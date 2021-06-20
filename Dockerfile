@@ -4,17 +4,17 @@
 # if the build arguments defined it will build a corresponding version instead
 # $ docker build [--build-args UNAME_R=<raspi release>] [--build-args RT_PATCH=<RT patch>] -t rtwg-image .
 #
-# where <raspi release> is in a form of 5.4.0-1034-raspi, 
+# where <raspi release> is in a form of 5.4.0-1034-raspi,
 #     see https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=linux-image-5.4&searchon=names
-# and <RT patch> is in a form of 5.4.106-rt54, 
+# and <RT patch> is in a form of 5.4.106-rt54,
 #     see http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older
 #
-# $ docker run -it rtwg-image bash 
+# $ docker run -it rtwg-image bash
 #
 # and then inside the docker
 # $ $HOME/linux_build && cd `ls -d */`
 # $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
-# 
+#
 # user ~/linux_build/linux-raspi-5.4.0 $ ls -la ../*.deb
 # -rw-r--r-- 1 user user  11430676 May 17 14:40 ../linux-headers-5.4.101-rt53_5.4.101-rt53-1_arm64.deb
 # -rw-r--r-- 1 user user 487338132 May 17 14:40 ../linux-image-5.4.101-rt53-dbg_5.4.101-rt53-1_arm64.deb
@@ -40,6 +40,15 @@ ARG UNAME_R
 ARG RT_PATCH
 ARG triple=aarch64-linux-gnu
 
+# setup environment
+ENV LANG C.UTF-8
+ENV LC_ALL C.UTF-8
+ENV ARCH ${ARCH}
+ENV UNAME_R ${UNAME_R}
+ENV triple "aarch64-linux-gnu"
+ENV CROSS_COMPILE "${triple}-"
+ENV LANG "C fakeroot debian/rules printenv"
+
 # setup arch
 RUN apt-get update && apt-get install -q -y \
     gcc-${triple} \
@@ -48,10 +57,6 @@ RUN apt-get update && apt-get install -q -y \
     && add-apt-repository -n -s "deb [arch=$ARCH] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -s -c) main universe restricted" \
     && add-apt-repository -n -s "deb [arch=$ARCH] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -s -c)-updates main universe restricted" \
     && rm -rf /var/lib/apt/lists/*
-
-# setup environment
-ENV LANG C.UTF-8
-ENV LC_ALL C.UTF-8
 
 # find the latest UNAME_R and store it locally for the later usage
 # Example:
@@ -117,9 +122,7 @@ RUN cd `ls -d */` \
 
 # setup build environment
 RUN cd `ls -d */` \
-    && export $(dpkg-architecture -a${ARCH}) \
-    && export CROSS_COMPILE=${triple}- \
-    && LANG=C fakeroot debian/rules printenv
+  && export $(dpkg-architecture -a${ARCH})
 
 COPY ./.config-fragment .
 
