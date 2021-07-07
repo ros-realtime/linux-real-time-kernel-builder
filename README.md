@@ -32,7 +32,7 @@ $ cd rt-kernel-docker-builder
 ```
 
 ```bash
-$ docker build [--build-args UNAME_R=<raspi release>] [--build-args RT_PATCH=<RT patch>] -t rtwg-image .
+$ docker build [--build-arg UNAME_R=<raspi release>] [--build-arg RT_PATCH=<RT patch>] -t rtwg-image .
 ```
 
 where:
