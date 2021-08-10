@@ -2,7 +2,7 @@
 #
 # it finds and takes the latest raspi image and the closest to it RT patch
 # if the build arguments defined it will build a corresponding version instead
-# $ docker build [--build-args UNAME_R=<raspi release>] [--build-args RT_PATCH=<RT patch>] -t rtwg-image .
+# $ docker build [--build-arg UNAME_R=<raspi release>] [--build-arg RT_PATCH=<RT patch>] -t rtwg-image .
 #
 # where <raspi release> is in a form of 5.4.0-1034-raspi, 
 #     see https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=linux-image-5.4&searchon=names
@@ -57,7 +57,7 @@ ENV LC_ALL C.UTF-8
 # Example:
 # apt-cache search -n linux-buildinfo-.*-raspi | sort | tail -n 1 | cut -d '-' -f 3-5
 # 5.4.0-1034-raspi
-# if $UNAME_R is set via --build-args, take it
+# if $UNAME_R is set via --build-arg, take it
 RUN apt-get update \
     && if test -z $UNAME_R; then UNAME_R=`apt-cache search -n linux-buildinfo-.*-raspi | sort | tail -n 1 | cut -d '-' -f 3-5`; fi \
     && echo $UNAME_R > /uname_r \
@@ -101,7 +101,7 @@ COPY ./getpatch.sh /getpatch.sh
 # Example:
 # ./getpatch.sh 101
 # 5.4.102-rt53
-# if $RT_PATCH is set via --build-args, take it
+# if $RT_PATCH is set via --build-arg, take it
 # get kernel SUBLEVEL via
 # $ make kernelversion
 RUN cd `ls -d */` \
