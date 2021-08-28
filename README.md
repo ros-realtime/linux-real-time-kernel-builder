@@ -150,11 +150,11 @@ $ sudo dpkg -i *.deb
 There is an extra step in compare to the x86_64 install because ```update-initramfs``` ignores new kernel
 
 ```bash
+$ sudo ln -s -f /boot/vmlinuz-5.4.101-rt53 /boot/vmlinuz
+$ sudo ln -s -f /boot/vmlinuz-5.4.0-1034-raspi /boot/vmlinuz.old
+$ sudo ln -s -f /boot/initrd.img-5.4.101-rt53 /boot/initrd.img
+$ sudo ln -s -f /boot/initrd.img-5.4.0-1034-raspi /boot/initrd.img.old
 $ cd /boot
-$ sudo ln -s -f vmlinuz-5.4.101-rt53 vmlinuz
-$ sudo ln -s -f vmlinuz-5.4.0-1034-raspi vmlinuz.old
-$ sudo ln -s -f initrd.img-5.4.101-rt53 initrd.img
-$ sudo ln -s -f initrd.img-5.4.0-1034-raspi initrd.img.old
 $ sudo cp vmlinuz firmware/vmlinuz
 $ sudo cp vmlinuz firmware/vmlinuz.bak
 $ sudo cp initrd.img firmware/initrd.img
