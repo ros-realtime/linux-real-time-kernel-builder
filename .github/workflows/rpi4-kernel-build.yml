@@ -1,0 +1,163 @@
+# This is a workflow for the RPI4 RT kernel build. It is based on the Dockerfile located in the repo
+# Workflow can be started 
+#  - manually
+#  - after modification of the kernel config fragment file ('.config-fragment') 
+# The build takes 1.5 hours and artifacts are available under workflow
+#  - kernel .deb packages
+# TODO: 
+#  - use Dockerfile instead
+#  - add input parameters
+#  - create Docker image and push it to the packages
+#  - create kernel build action
+
+name: 'RPI4 RT Kernel build'
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push only if kernel configuration changed
+  push:
+    paths:
+      - '.config-fragment'
+
+  # Allows you to run this workflow manually from the Actions tab
+  # manual start works on teh default branch only
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # Use Ubuntu 20.04 runner
+    runs-on: ubuntu-20.04
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Get available space
+        # We need at least 20GB to build kernel plus some space for the dependencies
+        run: |
+          cd /
+          df -H
+
+      - name: Get a list of the installed packages
+        # We might probably delete some of them to increase free space
+        run: |
+          sudo apt-get update
+          apt list --installed
+
+      - name: Increase free space
+        # Remove Android and dotnet
+        run: |
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
+          ls /usr/local/
+
+      - name: Get available size (again)
+        run: |
+          cd /
+          df -H
+
+      - name: Install deps
+        run: |
+          sudo apt-get install -q -y tzdata apt-utils lsb-release software-properties-common
+
+      - name: Setup arm64 repos
+        run: |
+          # these should be input params
+          ARCH=arm64
+          triple=aarch64-linux-gnu
+          sudo apt-get update
+          sudo apt-get install -q -y gcc-${triple}
+          sudo dpkg --add-architecture ${ARCH}
+          sudo sed -i 's/deb h/deb [arch=amd64] h/g' /etc/apt/sources.list
+          sudo add-apt-repository -n -s "deb [arch=$ARCH] http://ports.ubuntu.com/ubuntu-ports/ $(lsb_release -s -c) main universe restricted"
+          sudo add-apt-repository -n -s "deb [arch=$ARCH] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -s -c)-updates main universe restricted"
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Setup uname_r
+        run: |
+         sudo apt-get update
+         if test -z $UNAME_R; then UNAME_R=`apt-cache search -n linux-buildinfo-.*-raspi | sort | tail -n 1 | cut -d '-' -f 3-5`; fi \
+         && echo $UNAME_R > $HOME/uname_r \
+         && sudo rm -rf /var/lib/apt/lists/*
+
+      - name: install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get build-dep -q -y linux linux-image-`cat $HOME/uname_r`
+          sudo apt-get install -q -y \
+          libncurses-dev flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf fakeroot
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: install buildinfo
+        run: |
+          # install buildinfo to retrieve `raspi` kernel config
+          sudo apt-get update
+          sudo apt-get install -q -y linux-buildinfo-`cat $HOME/uname_r`
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: install extra packages needed for the patch handling
+        run: |
+          sudo apt-get update
+          sudo apt-get install -q -y wget curl gzip
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: install linux sources
+        run: |
+          sudo apt-get update
+          mkdir $HOME/linux_build && cd $HOME/linux_build
+          apt-get source linux-image-`cat $HOME/uname_r`
+          sudo rm -rf /var/lib/apt/lists/*
+
+      - name: get the nearest RT patch to the kernel SUBLEVEL
+        run: |
+          cd $HOME/linux_build
+          cd `ls -d */` 
+          if test -z $RT_PATCH; then $GITHUB_WORKSPACE/getpatch.sh `make kernelversion | cut -d '.' -f 3` > $HOME/rt_patch; else echo $RT_PATCH > $HOME/rt_patch; fi
+
+      - name: download and unzip RT patch, the closest to the RPI kernel version
+        run: |
+          cd $HOME/linux_build
+          wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-`cat $HOME/rt_patch`.patch.gz \
+          && gunzip patch-`cat $HOME/rt_patch`.patch.gz
+  
+      - name: patch raspi kernel, do not fail if some patches are skipped
+        run: |
+          cd $HOME/linux_build
+          cd `ls -d */` \
+          && OUT="$(patch -p1 --forward < ../patch-`cat $HOME/rt_patch`.patch)" || echo "${OUT}" | grep "Skipping patch" -q || (echo "$OUT" && false);
+
+      - name: setup build environment
+        run: |
+          cd $HOME/linux_build
+          cd `ls -d */` \
+          && export $(dpkg-architecture -a${ARCH}) \
+          && export CROSS_COMPILE=${triple}- \
+          && LANG=C fakeroot debian/rules printenv
+
+      - name: config RT kernel and merge config fragment
+        run: |
+          cd $HOME/linux_build
+          cd `ls -d */` \
+          && cp /usr/lib/linux/`cat $HOME/uname_r`/config .config \
+          && ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ./scripts/kconfig/merge_config.sh .config $GITHUB_WORKSPACE/.config-fragment
+
+      - name: clean debian/rules
+        run: |
+          cd $HOME/linux_build
+          cd `ls -d */` \
+          && fakeroot debian/rules clean
+
+      - name: build kernel
+        run: |
+          cd $HOME/linux_build
+          cd `ls -d */` \
+          && make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: 'RPI4 RT Kernel deb packages'
+          path: ~/linux_build/*.deb
+  
