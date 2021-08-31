@@ -117,7 +117,7 @@ jobs:
           cd `ls -d */` 
           if test -z $RT_PATCH; then $GITHUB_WORKSPACE/getpatch.sh `make kernelversion | cut -d '.' -f 3` > $HOME/rt_patch; else echo $RT_PATCH > $HOME/rt_patch; fi
 
-      - name: download and unzip RT patch, the closest to the RPI kernel version
+      - name: Download and unzip RT patch, the closest to the RPI kernel version
         run: |
           cd $HOME/linux_build
           wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-`cat $HOME/rt_patch`.patch.gz \
