@@ -91,7 +91,7 @@ jobs:
           libncurses-dev flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf fakeroot
           sudo rm -rf /var/lib/apt/lists/*
 
-      - name: install buildinfo
+      - name: Install buildinfo
         run: |
           # install buildinfo to retrieve `raspi` kernel config
           sudo apt-get update
