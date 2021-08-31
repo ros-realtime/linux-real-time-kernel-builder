@@ -123,7 +123,7 @@ jobs:
           wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-`cat $HOME/rt_patch`.patch.gz \
           && gunzip patch-`cat $HOME/rt_patch`.patch.gz
   
-      - name: patch raspi kernel, do not fail if some patches are skipped
+      - name: Patch raspi kernel, do not fail if some patches are skipped
         run: |
           cd $HOME/linux_build
           cd `ls -d */` \
