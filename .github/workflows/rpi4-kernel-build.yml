@@ -150,7 +150,7 @@ jobs:
           cd `ls -d */` \
           && fakeroot debian/rules clean
 
-      - name: build kernel
+      - name: Build kernel
         run: |
           cd $HOME/linux_build
           cd `ls -d */` \
