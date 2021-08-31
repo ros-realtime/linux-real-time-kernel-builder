@@ -137,7 +137,7 @@ jobs:
           && export CROSS_COMPILE=${triple}- \
           && LANG=C fakeroot debian/rules printenv
 
-      - name: config RT kernel and merge config fragment
+      - name: Config RT kernel and merge config fragment
         run: |
           cd $HOME/linux_build
           cd `ls -d */` \
