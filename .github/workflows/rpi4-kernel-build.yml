@@ -111,7 +111,7 @@ jobs:
           apt-get source linux-image-`cat $HOME/uname_r`
           sudo rm -rf /var/lib/apt/lists/*
 
-      - name: get the nearest RT patch to the kernel SUBLEVEL
+      - name: Get the nearest RT patch to the kernel SUBLEVEL
         run: |
           cd $HOME/linux_build
           cd `ls -d */` 
