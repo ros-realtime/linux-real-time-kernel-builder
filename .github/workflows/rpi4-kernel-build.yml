@@ -104,7 +104,7 @@ jobs:
           sudo apt-get install -q -y wget curl gzip
           sudo rm -rf /var/lib/apt/lists/*
 
-      - name: install linux sources
+      - name: Install linux sources
         run: |
           sudo apt-get update
           mkdir $HOME/linux_build && cd $HOME/linux_build
