@@ -83,7 +83,7 @@ jobs:
          && echo $UNAME_R > $HOME/uname_r \
          && sudo rm -rf /var/lib/apt/lists/*
 
-      - name: install build deps
+      - name: Install build deps
         run: |
           sudo apt-get update
           sudo apt-get build-dep -q -y linux linux-image-`cat $HOME/uname_r`
