@@ -129,7 +129,7 @@ jobs:
           cd `ls -d */` \
           && OUT="$(patch -p1 --forward < ../patch-`cat $HOME/rt_patch`.patch)" || echo "${OUT}" | grep "Skipping patch" -q || (echo "$OUT" && false);
 
-      - name: setup build environment
+      - name: Setup build environment
         run: |
           cd $HOME/linux_build
           cd `ls -d */` \
