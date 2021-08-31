@@ -144,7 +144,7 @@ jobs:
           && cp /usr/lib/linux/`cat $HOME/uname_r`/config .config \
           && ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ./scripts/kconfig/merge_config.sh .config $GITHUB_WORKSPACE/.config-fragment
 
-      - name: clean debian/rules
+      - name: Clean debian/rules
         run: |
           cd $HOME/linux_build
           cd `ls -d */` \
