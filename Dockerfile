@@ -141,9 +141,10 @@ RUN cd $HOME \
   && wget https://lttng.org/files/lttng-modules/lttng-modules-latest-2.12.tar.bz2 \
   && tar -xf *.tar.bz2 
 
-# run lttng built-in script to configur RT kernel
+# run lttng built-in script to configure RT kernel
 RUN set -x \
   && export KERNEL_DIR=`ls -d */` \
   && cd $HOME \
   && cd `ls -d lttng-*/` \
-  && ./scripts/built-in.sh ${HOME}/linux_build/${KERNEL_DIR}kernel/
+  && ./scripts/built-in.sh ${HOME}/linux_build/${KERNEL_DIR} \
+  && ./scripts/rt-patch-version.sh ${HOME}/linux_build/${KERNEL_DIR}
