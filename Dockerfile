@@ -95,6 +95,10 @@ RUN sudo apt-get update \
     && apt-get source linux-image-`cat /uname_r` \
     && sudo rm -rf /var/lib/apt/lists/*
 
+# install lttng dependencies
+RUN sudo apt-get update \
+  && sudo apt-get install -y libuuid1 libpopt0 liburcu6 libxml2 numactl
+
 COPY ./getpatch.sh /getpatch.sh
 
 # get the nearest RT patch to the kernel SUBLEVEL
@@ -130,3 +134,16 @@ RUN cd `ls -d */` \
 
 RUN cd `ls -d */` \
     && fakeroot debian/rules clean
+
+# download lttng source for use later
+# TODO(flynneva): make script to auto-determine which version to get?
+RUN cd $HOME \
+  && wget https://lttng.org/files/lttng-modules/lttng-modules-latest-2.12.tar.bz2 \
+  && tar -xf *.tar.bz2 
+
+# run lttng built-in script to configur RT kernel
+RUN set -x \
+  && export KERNEL_DIR=`ls -d */` \
+  && cd $HOME \
+  && cd `ls -d lttng-*/` \
+  && ./scripts/built-in.sh ${HOME}/linux_build/${KERNEL_DIR}kernel/
