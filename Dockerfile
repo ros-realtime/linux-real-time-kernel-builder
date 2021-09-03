@@ -116,6 +116,20 @@ RUN cd `ls -d */` \
 RUN wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-`cat $HOME/rt_patch`.patch.gz \
     && gunzip patch-`cat $HOME/rt_patch`.patch.gz
 
+# download lttng source for use later
+# TODO(flynneva): make script to auto-determine which version to get?
+RUN cd $HOME \
+  && wget https://lttng.org/files/lttng-modules/lttng-modules-latest-${LTTNG}.tar.bz2 \
+  && tar -xf *.tar.bz2 
+
+# run lttng built-in script to configure RT kernel
+RUN set -x \
+  && export KERNEL_DIR=`ls -d */` \
+  && cd $HOME \
+  && cd `ls -d lttng-*/` \
+  && ./scripts/built-in.sh ${HOME}/linux_build/${KERNEL_DIR} \
+  && ./scripts/rt-patch-version.sh ${HOME}/linux_build/${KERNEL_DIR}
+
 # patch `raspi` kernel, do not fail if some patches are skipped
 RUN cd `ls -d */` \
     && OUT="$(patch -p1 --forward < ../patch-`cat $HOME/rt_patch`.patch)" || echo "${OUT}" | grep "Skipping patch" -q || (echo "$OUT" && false);
@@ -135,17 +149,3 @@ RUN cd `ls -d */` \
 
 RUN cd `ls -d */` \
     && fakeroot debian/rules clean
-
-# download lttng source for use later
-# TODO(flynneva): make script to auto-determine which version to get?
-RUN cd $HOME \
-  && wget https://lttng.org/files/lttng-modules/lttng-modules-latest-${LTTNG}.tar.bz2 \
-  && tar -xf *.tar.bz2 
-
-# run lttng built-in script to configure RT kernel
-RUN set -x \
-  && export KERNEL_DIR=`ls -d */` \
-  && cd $HOME \
-  && cd `ls -d lttng-*/` \
-  && ./scripts/built-in.sh ${HOME}/linux_build/${KERNEL_DIR} \
-  && ./scripts/rt-patch-version.sh ${HOME}/linux_build/${KERNEL_DIR}
