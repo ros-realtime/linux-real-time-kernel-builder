@@ -188,10 +188,6 @@ ubuntu@ubuntu:~$ uname -a
 Linux ubuntu 5.4.101-rt53 #1 SMP PREEMPT_RT Mon May 17 12:10:16 UTC 2021 aarch64 aarch64 aarch64 GNU/Linux
 ```
 
-### Disable the ondemand.service to enable the performance cpu governor
-
-
-
 ## Intel UP2 board RT kernel build
 
 To build ```x86_64``` Linux kernel, see [Building Realtime rt_preempt kernel for ROS 2](https://index.ros.org/doc/ros2/Tutorials/Building-Realtime-rt_preempt-kernel-for-ROS-2)
