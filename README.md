@@ -145,6 +145,24 @@ $ cd $HOME
 $ sudo dpkg -i *.deb
 ```
 
+## Disable ondemand.service to enable the performance governor.
+
+Ubuntu has an ondemand.service that forces the cpu governor to ondemand post boot. This can be disabled via:
+
+```bash
+$ sudo systemctl disable ondemand
+```
+
+After fixing the /boot symlinks and rebooting, you can check the governor:
+
+```bash
+$ cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor
+performance
+performance
+performance
+performance
+```
+
 ## Adjust ```vmlinuz``` and ```initrd.img``` links
 
 There is an extra step in compare to the x86_64 install because ```update-initramfs``` ignores new kernel
@@ -169,6 +187,10 @@ After reboot you should see a new RT kernel installed
 ubuntu@ubuntu:~$ uname -a
 Linux ubuntu 5.4.101-rt53 #1 SMP PREEMPT_RT Mon May 17 12:10:16 UTC 2021 aarch64 aarch64 aarch64 GNU/Linux
 ```
+
+### Disable the ondemand.service to enable the performance cpu governor
+
+
 
 ## Intel UP2 board RT kernel build
 
