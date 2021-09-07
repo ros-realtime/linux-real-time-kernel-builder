@@ -39,7 +39,7 @@ ARG ARCH=arm64
 ARG UNAME_R
 ARG RT_PATCH
 ARG triple=aarch64-linux-gnu
-ARG LTTNG=2.12
+ARG LTTNG=2.12.5
 
 # setup arch
 RUN apt-get update && apt-get install -q -y \
@@ -119,7 +119,7 @@ RUN wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-`cat
 # download lttng source for use later
 # TODO(flynneva): make script to auto-determine which version to get?
 RUN cd $HOME \
-  && wget https://lttng.org/files/lttng-modules/lttng-modules-latest-${LTTNG}.tar.bz2 \
+  && wget https://lttng.org/files/lttng-modules/lttng-modules-${LTTNG}.tar.bz2 \
   && tar -xf *.tar.bz2 
 
 # run lttng built-in script to configure RT kernel
