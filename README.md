@@ -94,14 +94,14 @@ which corresponds to the following kernel configuration
 If you need to reconfigure it, run
 
 ```bash
-$ cd $HOME/linux_build/linux-raspi
+$ cd $HOME/linux_build/linux-raspi-*
 $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig
 ```
 
 ### Kernel build
 
 ```bash
-$ cd $HOME/linux_build/linux-raspi
+$ cd $HOME/linux_build/linux-raspi-*
 $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
 ```
 
