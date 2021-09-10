@@ -1,6 +1,8 @@
 # Introduction
 
-This README describes necessary steps to build an ```RT_PREEMPT``` Linux kernel for the Raspberry Pi4 board. It is a part of the ROS2 real-time system. Raspberry Pi4 is a reference board used by the ROS2 real-time community for the development.
+This README describes necessary steps to install ```RT_PREEMPT``` Linux kernel for the Raspberry Pi4 board, which is built by the ```rpi4-kernel-build``` Github action. RT Kernel is a part of the ROS2 real-time system. Raspberry Pi4 is a reference board used by the ROS2 real-time community for the development. Please follow [installation instructions](#deploy-new-kernel-on-raspberry-pi4). RT Kernel is configured as described in [Kernel configuration section](#kernel-configuration).
+
+In the case you need to build your own kernel read the description below.
 
 ## Raspberry Pi 4 RT Linux kernel
 
@@ -80,14 +82,11 @@ which corresponds to the following kernel configuration
   -> Timer frequency (1000 HZ)
    (X) 1000 HZ
 
-# Set CPU_FREQ_DEFAULT_GOV_PERFORMANCE [=y]
+# Disable CONFIG_CPU_FREQ
  -> CPU Power Management
-  -> CPU Frequency scaling
-   -> CPU Frequency scaling (CPU_FREQ [=y])
-    -> Default CPUFreq governor (<choice> [=y])
-     (X) performance
+  -> CPU Frequency scaling (CPU_FREQ [=n])
 
-# Disable CONFIG_AUFS_FS, otherwise RT kernel build breaks
+# Disable CONFIG_AUFS_FS, otherwise RT kernel build might break
  x     -> File systems                                                                                                                          x
   x (1)   -> Miscellaneous filesystems (MISC_FILESYSTEMS [=y])
 ```
@@ -135,6 +134,10 @@ After that you need to connect to the Internet and update your system
 ```bash
 $ sudo apt-get update && apt-get upgrade
 ```
+
+### Download RT Kernel ```deb``` packages
+
+Go to ```Action``` tab of the project, find the latest ```RPI4 RT Kernel build```, go inside the latest workflow run, and download and unzip artifacts called ```RPI4 RT Kernel deb packages```. This archive contains four debian packages.
 
 ### Copy a new kernel to your system and install it
 
