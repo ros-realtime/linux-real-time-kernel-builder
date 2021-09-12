@@ -39,6 +39,7 @@ ARG ARCH=arm64
 ARG UNAME_R
 ARG RT_PATCH
 ARG triple=aarch64-linux-gnu
+ARG LTTNG=2.12
 
 # setup arch
 RUN apt-get update && apt-get install -q -y \
@@ -95,6 +96,10 @@ RUN sudo apt-get update \
     && apt-get source linux-image-`cat /uname_r` \
     && sudo rm -rf /var/lib/apt/lists/*
 
+# install lttng dependencies
+RUN sudo apt-get update \
+  && sudo apt-get install -y libuuid1 libpopt0 liburcu6 libxml2 numactl
+
 COPY ./getpatch.sh /getpatch.sh
 
 # get the nearest RT patch to the kernel SUBLEVEL
@@ -110,6 +115,20 @@ RUN cd `ls -d */` \
 # download and unzip RT patch, the closest to the RPI kernel version
 RUN wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-`cat $HOME/rt_patch`.patch.gz \
     && gunzip patch-`cat $HOME/rt_patch`.patch.gz
+
+# download lttng source for use later
+# TODO(flynneva): make script to auto-determine which version to get?
+RUN cd $HOME \
+  && sudo apt-add-repository ppa:lttng/stable-${LTTNG} \
+  && sudo apt-get update \
+  && apt-get source lttng-modules-dkms
+
+# run lttng built-in script to configure RT kernel
+RUN set -x \
+  && export KERNEL_DIR=`ls -d */` \
+  && cd $HOME \
+  && cd `ls -d lttng-*/` \
+  && ./scripts/built-in.sh ${HOME}/linux_build/${KERNEL_DIR}
 
 # patch `raspi` kernel, do not fail if some patches are skipped
 RUN cd `ls -d */` \
