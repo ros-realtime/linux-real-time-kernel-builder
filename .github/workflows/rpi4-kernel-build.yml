@@ -14,13 +14,17 @@ name: 'RPI4 RT Kernel build'
 
 # Controls when the workflow will run
 on:
-  # Triggers the workflow on push only if kernel configuration changed
+  # Trigger the workflow on push or pull request,
+  # but only for the master branch
   push:
-    paths:
-      - '.config-fragment'
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
 
   # Allows you to run this workflow manually from the Actions tab
-  # manual start works on teh default branch only
+  # manual start works on the default branch only
   workflow_dispatch:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel

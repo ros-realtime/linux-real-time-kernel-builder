@@ -92,12 +92,14 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig
 Alternatively, you can modify ```.config-fragment``` and then merge your changes in the ```.config``` by running
 
 ```bash
+cd $HOME/linux_build/linux-raspi-*
 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ./scripts/kconfig/merge_config.sh .config $HOME/linux_build/.config-fragment
 ```
 
 ### Kernel build
 
 ```bash
+cd $HOME/linux_build/linux-raspi-*
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
 ```
 
@@ -171,6 +173,12 @@ Linux ubuntu 5.4.101-rt53 #1 SMP PREEMPT_RT Mon May 17 12:10:16 UTC 2021 aarch64
 ## Intel UP2 board RT kernel build
 
 To build ```x86_64``` Linux kernel, see [Building Realtime rt_preempt kernel for ROS 2](https://index.ros.org/doc/ros2/Tutorials/Building-Realtime-rt_preempt-kernel-for-ROS-2)
+
+## Why is LTTng included in the kernel?
+
+[LTTng](https://lttng.org/docs) stands for _Linux Trace Toolkit: next generation_ and is an open source toolkit that enables low-level kernel tracing which can be extremely useful when calculating callback times, memory usage and many other key characteristics.
+
+As this repository is within the `ros-realtime` organization it can be assumed that most users will install ROS 2 on the end system - which then they can use `ros2_tracing` to trace various things. Since [`ros2_tracing`](https://gitlab.com/ros-tracing/ros2_tracing) uses LTTng as its tracer, and since [the `lttng-modules` package is not easily available](https://github.com/ros-realtime/rt-kernel-docker-builder/issues/16) for the raspberry-pi RT linux kernel we build it into the kernel here as a work around.
 
 ## References
 
