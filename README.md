@@ -2,11 +2,11 @@
 
 ## Introduction
 
-This README describes necessary steps to build and install ```RT_PREEMPT``` Linux kernel for the Raspberry Pi4 board. RT Kernel is a part of the ROS2 real-time system setup. Raspberry Pi4 is a reference board used by the ROS2 real-time community for the development. RT Kernel is configured as described in [Kernel configuration section](#kernel-configuration). Kernel is built automatically by the Github action, and the artifacts are located under the [```RPI4 RT Kernel build```](https://github.com/ros-realtime/rt-kernel-docker-builder/actions/workflows/rpi4-kernel-build.yml). Please follow [installation instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy a new kernel to the RPI4 board.
+This README describes necessary steps to build and install ```RT_PREEMPT``` Linux kernel for the Raspberry Pi4 board. RT Kernel is a part of the ROS2 real-time system setup. Raspberry Pi4 is a reference board used by the ROS 2 real-time community for the development. RT Kernel is configured as described in [Kernel configuration section](#kernel-configuration). Kernel is built automatically by the Github action, and the artifacts are located under the [```RPI4 RT Kernel build```](https://github.com/ros-realtime/rt-kernel-docker-builder/actions/workflows/rpi4-kernel-build.yml). Please follow [installation instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy a new kernel to the RPI4 board.
 
 ## Raspberry Pi 4 RT Linux kernel
 
-Ubuntu ```raspi``` kernel is modified to produce an RT Linux kernel. Ubuntu is a ROS2 Tier 1 platform and Ubuntu kernel was selected to align to it.  
+Ubuntu ```raspi``` kernel is modified to produce an RT Linux kernel. Ubuntu is a ROS 2 Tier 1 platform and Ubuntu kernel was selected to align to it.  
 
 ## Download ready-to-use RT Kernel ```deb``` packages
 
@@ -89,7 +89,7 @@ If you need to reconfigure it, run
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig
 ```
 
-alternatively you can modify ```.config-fragment``` and then merge your changes in the ```.config``` by running
+Alternatively, you can modify ```.config-fragment``` and then merge your changes in the ```.config``` by running
 
 ```bash
 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ./scripts/kconfig/merge_config.sh .config $HOME/linux_build/.config-fragment
