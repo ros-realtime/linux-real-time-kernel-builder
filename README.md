@@ -1,12 +1,37 @@
-# Introduction
+# Build ```RT_PREEMPT``` kernel for Raspberry Pi 4
 
-This README describes necessary steps to install ```RT_PREEMPT``` Linux kernel for the Raspberry Pi4 board, which is built by the ```rpi4-kernel-build``` Github action. RT Kernel is a part of the ROS2 real-time system. Raspberry Pi4 is a reference board used by the ROS2 real-time community for the development. Please follow [installation instructions](#deploy-new-kernel-on-raspberry-pi4). RT Kernel is configured as described in [Kernel configuration section](#kernel-configuration).
+## Introduction
 
-In the case you need to build your own kernel read the description below.
+This README describes necessary steps to build and install ```RT_PREEMPT``` Linux kernel for the Raspberry Pi4 board. RT Kernel is a part of the ROS2 real-time system setup. Raspberry Pi4 is a reference board used by the ROS 2 real-time community for the development. RT Kernel is configured as described in [Kernel configuration section](#kernel-configuration). Kernel is built automatically by the Github action, and the artifacts are located under the [```RPI4 RT Kernel build```](https://github.com/ros-realtime/rt-kernel-docker-builder/actions/workflows/rpi4-kernel-build.yml). Please follow [installation instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy a new kernel to the RPI4 board.
 
 ## Raspberry Pi 4 RT Linux kernel
 
-Ubuntu ```raspi``` kernel is modified to produce an RT Linux kernel. Ubuntu kernel is selected to align to one of the ROS2 Tier 1 platforms.  
+Ubuntu ```raspi``` kernel is modified to produce an RT Linux kernel. Ubuntu is a ROS 2 Tier 1 platform and Ubuntu kernel was selected to align to it.  
+
+## Download ready-to-use RT Kernel ```deb``` packages
+
+RT Kernel is configured using configuration parameters from the [](.config-fragment) file. In the case you need to build your own kernel read the description below.
+
+### Using GUI
+
+Go to the ```Action``` tab, find the latest ```RPI4 RT Kernel build```, go inside the latest workflow run, download, and unzip artifacts called ```RPI4 RT Kernel deb packages```. This archive contains four debian packages. Follow [instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy them on the RPI4.
+
+### Using command line
+
+Go to the [```Developer settings```](https://github.com/settings/tokens) and generate a token to access the repo via Github API. Use this token in conjunction with your Github name to retrieve build artifacts.
+
+```bash
+$ token=<my_token>
+# rertieve all artifacts
+$ curl -i -u <my github name>:$token -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/ros-realtime/rt-kernel-docker-builder/actions/artifacts | grep archive_download_url
+      "archive_download_url": "https://api.github.com/repos/ros-realtime/rt-kernel-docker-builder/actions/artifacts/91829081/zip",
+      "archive_download_url": "https://api.github.com/repos/ros-realtime/rt-kernel-docker-builder/actions/artifacts/91534731/zip",
+
+# download the latest one
+$ curl -u <my github name>:$token -L -H "Accept: application/vnd.github.v3+json"  https://api.github.com/repos/ros-realtime/rt-kernel-docker-builder/actions/artifacts/91829081/zip  --output rpi4_rt_kernel.zip
+
+$ unzip rpi4_rt_kernel.zip
+```
 
 ## Raspberry Pi 4 RT Linux kernel build
 
@@ -29,12 +54,12 @@ It finds the latest ```raspi``` ```linux-image``` and the closest to it RT patch
 For the local build:
 
 ```bash
-$ git clone https://github.com/ros-realtime/rt-kernel-docker-builder
-$ cd rt-kernel-docker-builder
+git clone https://github.com/ros-realtime/rt-kernel-docker-builder
+cd rt-kernel-docker-builder
 ```
 
 ```bash
-$ docker build [--build-arg UNAME_R=<raspi release>] [--build-arg RT_PATCH=<RT patch>] -t rtwg-image .
+docker build [--build-arg UNAME_R=<raspi release>] [--build-arg RT_PATCH=<RT patch>] -t rtwg-image .
 ```
 
 where:
@@ -43,12 +68,12 @@ where:
 * ```<RT patch>``` is in a form of ```5.4.106-rt54```, see [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
 
 ```bash
-$ docker run -t -i rtwg-image bash
+docker run -t -i rtwg-image bash
 ```
 
 ### Kernel configuration
 
-There is a separate kernel configuration fragment```.config-fragment``` introduced to apply ROS2 real-time specific kernel settings:
+There is a separate kernel configuration fragment```.config-fragment``` introduced to apply ROS2 real-time specific kernel settings. Below is an example:
 
 ```bash
 $ cat .config-fragment
@@ -58,51 +83,24 @@ CONFIG_HZ_1000=y
 # CONFIG_AUFS_FS is not set
 ```
 
-which corresponds to the following kernel configuration
-
-```bash
-# Enable CONFIG_PREEMPT_RT
- -> General Setup
-  -> Preemption Model (Fully Preemptible Kernel (Real-Time))
-   (X) Fully Preemptible Kernel (Real-Time)
-
-# Enable CONFIG_HIGH_RES_TIMERS
- -> General setup
-  -> Timers subsystem
-   [*] High Resolution Timer Support
-
-# Enable CONFIG_NO_HZ_FULL
- -> General setup
-  -> Timers subsystem
-   -> Timer tick handling (Full dynticks system (tickless))
-    (X) Full dynticks system (tickless)
-
-# Set CONFIG_HZ_1000
- -> Kernel Features
-  -> Timer frequency (1000 HZ)
-   (X) 1000 HZ
-
-# Disable CONFIG_CPU_FREQ
- -> CPU Power Management
-  -> CPU Frequency scaling (CPU_FREQ [=n])
-
-# Disable CONFIG_AUFS_FS, otherwise RT kernel build might break
- x     -> File systems                                                                                                                          x
-  x (1)   -> Miscellaneous filesystems (MISC_FILESYSTEMS [=y])
-```
-
 If you need to reconfigure it, run
 
 ```bash
-$ cd $HOME/linux_build/linux-raspi-*
-$ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig
+```
+
+Alternatively, you can modify ```.config-fragment``` and then merge your changes in the ```.config``` by running
+
+```bash
+cd $HOME/linux_build/linux-raspi-*
+ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ./scripts/kconfig/merge_config.sh .config $HOME/linux_build/.config-fragment
 ```
 
 ### Kernel build
 
 ```bash
-$ cd $HOME/linux_build/linux-raspi-*
-$ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
+cd $HOME/linux_build/linux-raspi-*
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
 ```
 
 You need 16GB free disk space to build it, it takes a while, and the results are located:
@@ -114,15 +112,16 @@ raspi ~/linux_build/linux-raspi-5.4.0 $ ls -la ../*.deb
 -rw-r--r-- 1 user user  39355940 May 17 14:40 ../linux-image-5.4.101-rt53_5.4.101-rt53-1_arm64.deb
 -rw-r--r-- 1 user user   1055272 May 17 14:40 ../linux-libc-dev_5.4.101-rt53-1_arm64.deb
 ```
+
 ## Deploy new kernel on Raspberry Pi4
 
-### Download and install Ubuntu 20.04 image
+### Download and install Ubuntu 20.04 desktop image
 
 Follow these links to download and install Ubuntu 20.04 on your Raspberry Pi4
 
-* https://ubuntu.com/download/raspberry-pi
-* https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04&architecture=arm64+raspi
-* https://ubuntu.com/tutorials/create-an-ubuntu-image-for-a-raspberry-pi-on-ubuntu#2-on-your-ubuntu-machine
+* [Install Ubuntu on a Raspberry Pi](https://ubuntu.com/download/raspberry-pi)
+* [Download Ubuntu Raspberry Pi image](https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04&architecture=arm64+raspi)
+* [Create an Ubuntu image for a Raspberry Pi on Ubuntu](https://ubuntu.com/tutorials/create-an-ubuntu-image-for-a-raspberry-pi-on-ubuntu#2-on-your-ubuntu-machine)
 
 ```bash
 # initial username and password
@@ -137,17 +136,13 @@ After that you need to connect to the Internet and update your system
 $ sudo apt-get update && apt-get upgrade
 ```
 
-### Download RT Kernel ```deb``` packages
-
-Go to ```Action``` tab of the project, find the latest ```RPI4 RT Kernel build```, go inside the latest workflow run, and download and unzip artifacts called ```RPI4 RT Kernel deb packages```. This archive contains four debian packages.
-
 ### Copy a new kernel to your system and install it
 
 Assumed you have already copied all ```*.deb``` kernel packages to your ```$HOME``` directory
 
 ```bash
-$ cd $HOME
-$ sudo dpkg -i *.deb
+cd $HOME
+sudo dpkg -i *.deb
 ```
 
 ## Adjust ```vmlinuz``` and ```initrd.img``` links
@@ -155,17 +150,17 @@ $ sudo dpkg -i *.deb
 There is an extra step in compare to the x86_64 install because ```update-initramfs``` ignores new kernel
 
 ```bash
-$ sudo ln -s -f /boot/vmlinuz-5.4.101-rt53 /boot/vmlinuz
-$ sudo ln -s -f /boot/vmlinuz-5.4.0-1034-raspi /boot/vmlinuz.old
-$ sudo ln -s -f /boot/initrd.img-5.4.101-rt53 /boot/initrd.img
-$ sudo ln -s -f /boot/initrd.img-5.4.0-1034-raspi /boot/initrd.img.old
-$ cd /boot
-$ sudo cp vmlinuz firmware/vmlinuz
-$ sudo cp vmlinuz firmware/vmlinuz.bak
-$ sudo cp initrd.img firmware/initrd.img
-$ sudo cp initrd.img firmware/initrd.img.bak
+sudo ln -s -f /boot/vmlinuz-5.4.101-rt53 /boot/vmlinuz
+sudo ln -s -f /boot/vmlinuz-5.4.0-1034-raspi /boot/vmlinuz.old
+sudo ln -s -f /boot/initrd.img-5.4.101-rt53 /boot/initrd.img
+sudo ln -s -f /boot/initrd.img-5.4.0-1034-raspi /boot/initrd.img.old
+cd /boot
+sudo cp vmlinuz firmware/vmlinuz
+sudo cp vmlinuz firmware/vmlinuz.bak
+sudo cp initrd.img firmware/initrd.img
+sudo cp initrd.img firmware/initrd.img.bak
 
-$ sudo reboot
+sudo reboot
 ```
 
 After reboot you should see a new RT kernel installed
@@ -187,8 +182,8 @@ As this repository is within the `ros-realtime` organization it can be assumed t
 
 ## References
 
-* https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=linux-image-5.4&searchon=names
-* http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older
-* https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04&architecture=arm64+raspi
-* https://index.ros.org/doc/ros2/Tutorials/Building-Realtime-rt_preempt-kernel-for-ROS-2/
-
+* [ROS Real-Time Working group documentation](https://real-time-working-group.readthedocs.io/en/rolling/Guides/Real-Time-Operating-System-Setup/Real-Time-Linux/rt_linux_index.html)
+* [Ubuntu raspi linux images](https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=linux-image-5.4&searchon=names)
+* [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
+* [Download Ubuntu raspi image](https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04&architecture=arm64+raspi)
+* [Building Realtime ```RT_PREEMPT``` kernel for ROS 2](https://index.ros.org/doc/ros2/Tutorials/Building-Realtime-rt_preempt-kernel-for-ROS-2/)
