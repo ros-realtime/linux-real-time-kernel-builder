@@ -115,12 +115,12 @@ raspi ~/linux_build/linux-raspi-5.4.0 $ ls -la ../*.deb
 
 ## Deploy new kernel on Raspberry Pi4
 
-### Download and install Ubuntu 20.04 desktop image
+### Download and install Ubuntu 20.04 server image
 
 Follow these links to download and install Ubuntu 20.04 on your Raspberry Pi4
 
 * [Install Ubuntu on a Raspberry Pi](https://ubuntu.com/download/raspberry-pi)
-* [Download Ubuntu Raspberry Pi image](https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04&architecture=arm64+raspi)
+* [Download Ubuntu Raspberry Pi server image](https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04.3&architecture=server-arm64+raspi)
 * [Create an Ubuntu image for a Raspberry Pi on Ubuntu](https://ubuntu.com/tutorials/create-an-ubuntu-image-for-a-raspberry-pi-on-ubuntu#2-on-your-ubuntu-machine)
 
 ```bash
@@ -134,6 +134,14 @@ After that you need to connect to the Internet and update your system
 
 ```bash
 $ sudo apt-get update && apt-get upgrade
+```
+
+### Install Ubuntu Desktop (optional)
+
+Optionally you can install a desktop version
+
+```bash
+$ sudo apt-get update && apt-get upgrade && apt-get install ubuntu-desktop
 ```
 
 ### Copy a new kernel to your system and install it
