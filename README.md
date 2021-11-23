@@ -1,8 +1,10 @@
 # Build ```RT_PREEMPT``` kernel for Raspberry Pi 4
 
+[![RPI4 RT Kernel build](https://github.com/ros-realtime/linux-real-time-kernel-builder/actions/workflows/rpi4-kernel-build.yml/badge.svg)](https://github.com/ros-realtime/linux-real-time-kernel-builder/actions/workflows/rpi4-kernel-build.yml)
+
 ## Introduction
 
-This README describes necessary steps to build and install ```RT_PREEMPT``` Linux kernel for the Raspberry Pi4 board. RT Kernel is a part of the ROS2 real-time system setup. Raspberry Pi4 is a reference board used by the ROS 2 real-time community for the development. RT Kernel is configured as described in [Kernel configuration section](#kernel-configuration). Kernel is built automatically by the Github action, and the artifacts are located under the [```RPI4 RT Kernel build```](https://github.com/ros-realtime/rt-kernel-docker-builder/actions/workflows/rpi4-kernel-build.yml). Please follow [installation instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy a new kernel to the RPI4 board.
+This README describes necessary steps to build and install ```RT_PREEMPT``` Linux kernel for the Raspberry Pi4 board. RT Kernel is a part of the ROS2 real-time system setup. Raspberry Pi4 is a reference board used by the ROS 2 real-time community for the development. RT Kernel is configured as described in [Kernel configuration section](#kernel-configuration). Kernel is built automatically by the Github action, and the artifacts are located under the [```RPI4 RT Kernel build```](https://github.com/ros-realtime/linux-real-time-kernel-builder/actions/workflows/rpi4-kernel-build.yml). Please follow [installation instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy a new kernel to the RPI4 board.
 
 ## Raspberry Pi 4 RT Linux kernel
 
@@ -23,12 +25,12 @@ Go to the [```Developer settings```](https://github.com/settings/tokens) and gen
 ```bash
 $ token=<my_token>
 # rertieve all artifacts
-$ curl -i -u <my github name>:$token -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/ros-realtime/rt-kernel-docker-builder/actions/artifacts | grep archive_download_url
-      "archive_download_url": "https://api.github.com/repos/ros-realtime/rt-kernel-docker-builder/actions/artifacts/91829081/zip",
-      "archive_download_url": "https://api.github.com/repos/ros-realtime/rt-kernel-docker-builder/actions/artifacts/91534731/zip",
+$ curl -i -u <my github name>:$token -H "Accept: application/vnd.github.v3+json" https://api.github.com/repos/ros-realtime/linux-real-time-kernel-builder/actions/artifacts | grep archive_download_url
+      "archive_download_url": "https://api.github.com/repos/ros-realtime/linux-real-time-kernel-builder/actions/artifacts/91829081/zip",
+      "archive_download_url": "https://api.github.com/repos/ros-realtime/linux-real-time-kernel-builder/actions/artifacts/91534731/zip",
 
 # download the latest one
-$ curl -u <my github name>:$token -L -H "Accept: application/vnd.github.v3+json"  https://api.github.com/repos/ros-realtime/rt-kernel-docker-builder/actions/artifacts/91829081/zip  --output rpi4_rt_kernel.zip
+$ curl -u <my github name>:$token -L -H "Accept: application/vnd.github.v3+json"  https://api.github.com/repos/ros-realtime/linux-real-time-kernel-builder/actions/artifacts/91829081/zip  --output rpi4_rt_kernel.zip
 
 $ unzip rpi4_rt_kernel.zip
 ```
@@ -54,8 +56,8 @@ It finds the latest ```raspi``` ```linux-image``` and the closest to it RT patch
 For the local build:
 
 ```bash
-git clone https://github.com/ros-realtime/rt-kernel-docker-builder
-cd rt-kernel-docker-builder
+git clone https://github.com/ros-realtime/linux-real-time-kernel-builder
+cd linux-real-time-kernel-builder
 ```
 
 ```bash
@@ -186,7 +188,7 @@ To build ```x86_64``` Linux kernel, see [Building Realtime rt_preempt kernel for
 
 [LTTng](https://lttng.org/docs) stands for _Linux Trace Toolkit: next generation_ and is an open source toolkit that enables low-level kernel tracing which can be extremely useful when calculating callback times, memory usage and many other key characteristics.
 
-As this repository is within the `ros-realtime` organization it can be assumed that most users will install ROS 2 on the end system - which then they can use `ros2_tracing` to trace various things. Since [`ros2_tracing`](https://gitlab.com/ros-tracing/ros2_tracing) uses LTTng as its tracer, and since [the `lttng-modules` package is not easily available](https://github.com/ros-realtime/rt-kernel-docker-builder/issues/16) for the raspberry-pi RT linux kernel we build it into the kernel here as a work around.
+As this repository is within the `ros-realtime` organization it can be assumed that most users will install ROS 2 on the end system - which then they can use `ros2_tracing` to trace various things. Since [`ros2_tracing`](https://gitlab.com/ros-tracing/ros2_tracing) uses LTTng as its tracer, and since [the `lttng-modules` package is not easily available](https://github.com/ros-realtime/linux-real-time-kernel-builder/issues/16) for the raspberry-pi RT linux kernel we build it into the kernel here as a work around.
 
 ## References
 
