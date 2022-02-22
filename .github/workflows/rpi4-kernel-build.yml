@@ -1,10 +1,10 @@
 # This is a workflow for the RPI4 RT kernel build. It is based on the Dockerfile located in the repo
-# Workflow can be started 
+# Workflow can be started
 #  - manually
-#  - after modification of the kernel config fragment file ('.config-fragment') 
+#  - after modification of the kernel config fragment file ('.config-fragment')
 # The build takes 1.5 hours and artifacts are available under workflow
 #  - kernel .deb packages
-# TODO: 
+# TODO:
 #  - use Dockerfile instead
 #  - add input parameters
 #  - create Docker image and push it to the packages
@@ -118,7 +118,7 @@ jobs:
       - name: Get the nearest RT patch to the kernel SUBLEVEL
         run: |
           cd $HOME/linux_build
-          cd `ls -d */` 
+          cd `ls -d */`
           if test -z $RT_PATCH; then $GITHUB_WORKSPACE/getpatch.sh `make kernelversion | cut -d '.' -f 3` > $HOME/rt_patch; else echo $RT_PATCH > $HOME/rt_patch; fi
 
       - name: Download and unzip RT patch, the closest to the RPI kernel version
@@ -126,7 +126,7 @@ jobs:
           cd $HOME/linux_build
           wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-`cat $HOME/rt_patch`.patch.gz \
           && gunzip patch-`cat $HOME/rt_patch`.patch.gz
-  
+
       - name: Patch raspi kernel, do not fail if some patches are skipped
         run: |
           cd $HOME/linux_build
@@ -158,10 +158,10 @@ jobs:
         run: |
           cd $HOME/linux_build
           cd `ls -d */` \
-          && make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
+          && make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=-raspi -j `nproc` deb-pkg
 
       - uses: actions/upload-artifact@v2
         with:
           name: 'RPI4 RT Kernel deb packages'
           path: ~/linux_build/*.deb
-  
+
