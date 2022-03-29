@@ -176,7 +176,7 @@ As this repository is within the `ros-realtime` organization it can be assumed t
 
 ## References
 
-* [ROS Real-Time Working group documentation](https://real-time-working-group.readthedocs.io/en/rolling/Guides/Real-Time-Operating-System-Setup/Real-Time-Linux/rt_linux_index.html)
+* [ROS Real-Time Working group documentation](https://ros-realtime.github.io/Guides/Real-Time-Operating-System-Setup/Real-Time-Linux/rt_linux_index.html)
 * [Ubuntu raspi linux images](https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=linux-image-5.4&searchon=names)
 * [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
 * [Download Ubuntu raspi image](https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04&architecture=arm64+raspi)
