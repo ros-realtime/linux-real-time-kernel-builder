@@ -1,0 +1,15 @@
+name: 'Build stable'
+
+on:
+  workflow_dispatch:
+    inputs:
+      uname_r:
+        description: 'raspi release in a form of <5.4.0-1058-raspi>'
+        required: true
+        default: '5.4.0-1058-raspi'
+        type: string
+jobs:
+  call-rpi4-kernel-build:
+    uses: ./.github/workflows/rpi4-kernel-build.yml
+    with:
+      uname_r: ${{ github.event.inputs.uname_r }}
