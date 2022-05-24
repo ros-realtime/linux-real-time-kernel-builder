@@ -103,7 +103,7 @@ RUN cd /home/user \
 RUN sudo apt-get update \
     && sudo apt-get install -y libuuid1 libpopt0 liburcu6 libxml2 numactl
 
-COPY ./getpatch.sh /home/user/.
+COPY ./getpatch.sh /home/user/
 
 # get the nearest RT patch to the kernel SUBLEVEL
 # if $RT_PATCH is set via --build-arg, take it
@@ -122,12 +122,9 @@ RUN cd /home/user/ \
     && sudo apt-get update \
     && apt-get source lttng-modules-dkms
 
-WORKDIR /home/user
-
 # run lttng built-in script to configure RT kernel
 RUN set -x \
-    cd /home/user \
-    && cd `ls -d lttng-modules-*` \
+    && cd `ls -d /home/user/lttng-modules-*` \
     && ./scripts/built-in.sh ${HOME}/linux_build/${KERNEL_DIR}
 
 # patch kernel, do not fail if some patches are skipped
