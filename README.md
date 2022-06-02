@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This README describes necessary steps to build and install ```RT_PREEMPT``` Linux kernel for the Raspberry Pi4 board. RT Kernel is a part of the ROS2 real-time system setup. Raspberry Pi4 is a reference board used by the ROS 2 real-time community for the development. RT Kernel is configured as described in [Kernel configuration section](#kernel-configuration). Kernel is built automatically by the Github action, and the artifacts are located under the [```RPI4 RT Kernel build```](https://github.com/ros-realtime/linux-real-time-kernel-builder/actions/workflows/rpi4-kernel-build.yml). Please follow [installation instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy a new kernel to the RPI4 board.
+This README describes necessary steps to build and install ```RT_PREEMPT``` Linux kernel for the Raspberry Pi4 board. RT Kernel is a part of the ROS2 real-time system setup. Raspberry Pi4 is a reference board used by the ROS 2 real-time community for the development. RT Kernel is configured as described in [Kernel configuration section](#kernel-configuration). Kernel is built automatically by the Github action, and the artifacts are located under the [```build stable```](https://github.com/razr/linux-real-time-kernel-builder/actions/workflows/build-stable.yaml). Please follow [installation instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy a new kernel to the RPI4 board.
 
 ## Raspberry Pi 4 RT Linux kernel
 
@@ -16,7 +16,7 @@ RT Kernel is configured using configuration parameters from the [](.config-fragm
 
 ### Using GUI
 
-Go to the ```Action``` tab, find the latest ```RPI4 RT Kernel build```, go inside the latest workflow run, download, and unzip artifacts called ```RPI4 RT Kernel deb packages```. This archive contains four debian packages. Follow [instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy them on the RPI4.
+Go to the ```Action``` tab, find the ```Build stable```, go inside the latest workflow run, download, and unzip artifacts called ```RPI4 RT Kernel deb packages```. This archive contains three debian packages. Follow [instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy them on the RPI4.
 
 ### Using command line
 
@@ -61,13 +61,13 @@ cd linux-real-time-kernel-builder
 ```
 
 ```bash
-docker build [--build-arg UNAME_R=<raspi release>] [--build-arg RT_PATCH=<RT patch>] -t rtwg-image .
+docker build [--no-cache] [--build-arg UNAME_R=<raspi release>] [--build-arg RT_PATCH=<RT patch>] -t rtwg-image .
 ```
 
 where:
 
-* ```<raspi release>``` is in a form of ```5.4.0-1034-raspi```,  see [Ubuntu raspi Linux kernels](https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=linux-image-5.4&searchon=names)
-* ```<RT patch>``` is in a form of ```5.4.106-rt54```, see [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
+* ```<raspi release>``` is in a form of ```5.4.0-1058-raspi```,  see [Ubuntu raspi Linux kernels](http://ports.ubuntu.com/pool/main/l/linux-raspi)
+* ```<RT patch>``` is in a form of ```5.4.177-rt69```, see [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
 
 ```bash
 docker run -t -i rtwg-image bash
@@ -94,25 +94,24 @@ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- menuconfig
 Alternatively, you can modify ```.config-fragment``` and then merge your changes in the ```.config``` by running
 
 ```bash
-cd $HOME/linux_build/linux-raspi-*
+cd $HOME/linux_build/linux-raspi
 ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ./scripts/kconfig/merge_config.sh .config $HOME/linux_build/.config-fragment
 ```
 
 ### Kernel build
 
 ```bash
-cd $HOME/linux_build/linux-raspi-*
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- -j `nproc` deb-pkg
+cd $HOME/linux_build/linux-raspi
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=-raspi -j `nproc` bindeb-pkg
 ```
 
 You need 16GB free disk space to build it, it takes a while, and the results are located:
 
 ```bash
-raspi ~/linux_build/linux-raspi-5.4.0 $ ls -la ../*.deb
--rw-r--r-- 1 user user  11430676 May 17 14:40 ../linux-headers-5.4.101-rt53_5.4.101-rt53-1_arm64.deb
--rw-r--r-- 1 user user 487338132 May 17 14:40 ../linux-image-5.4.101-rt53-dbg_5.4.101-rt53-1_arm64.deb
--rw-r--r-- 1 user user  39355940 May 17 14:40 ../linux-image-5.4.101-rt53_5.4.101-rt53-1_arm64.deb
--rw-r--r-- 1 user user   1055272 May 17 14:40 ../linux-libc-dev_5.4.101-rt53-1_arm64.deb
+raspi:~/linux_build/linux-raspi $ ls -la ../*.deb
+-rw-r--r-- 1 user user  11442412 Apr  8 13:20 ../linux-headers-5.4.174-rt69-raspi_5.4.174-rt69-raspi-1_arm64.deb
+-rw-r--r-- 1 user user  40261364 Apr  8 13:21 ../linux-image-5.4.174-rt69-raspi_5.4.174-rt69-raspi-1_arm64.deb
+-rw-r--r-- 1 user user   1055452 Apr  8 13:20 ../linux-libc-dev_5.4.174-rt69-raspi-1_arm64.deb
 ```
 
 ## Deploy new kernel on Raspberry Pi4
@@ -152,7 +151,7 @@ Assumed you have already copied all ```*.deb``` kernel packages to your ```$HOME
 
 ```bash
 cd $HOME
-sudo dpkg -i *.deb
+sudo dpkg -i linux-image-*.deb
 
 sudo reboot
 ```
@@ -161,7 +160,7 @@ After reboot you should see a new RT kernel installed
 
 ```bash
 ubuntu@ubuntu:~$ uname -a
-Linux ubuntu 5.4.101-rt53 #1 SMP PREEMPT_RT Mon May 17 12:10:16 UTC 2021 aarch64 aarch64 aarch64 GNU/Linux
+Linux ubuntu 5.4.174-rt69-raspi #1 SMP PREEMPT_RT Mon Apr 8 14:10:16 UTC 2022 aarch64 aarch64 aarch64 GNU/Linux
 ```
 
 ## Intel UP2 board RT kernel build
@@ -177,7 +176,7 @@ As this repository is within the `ros-realtime` organization it can be assumed t
 ## References
 
 * [ROS Real-Time Working group documentation](https://ros-realtime.github.io/Guides/Real-Time-Operating-System-Setup/Real-Time-Linux/rt_linux_index.html)
-* [Ubuntu raspi linux images](https://packages.ubuntu.com/search?suite=default&section=all&arch=any&keywords=linux-image-5.4&searchon=names)
+* [Ubuntu raspi linux images](http://ports.ubuntu.com/pool/main/l/linux-raspi)
 * [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
 * [Download Ubuntu raspi image](https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04&architecture=arm64+raspi)
 * [Building Realtime ```RT_PREEMPT``` kernel for ROS 2](https://index.ros.org/doc/ros2/Tutorials/Building-Realtime-rt_preempt-kernel-for-ROS-2/)

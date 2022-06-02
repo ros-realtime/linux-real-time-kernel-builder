@@ -1,31 +1,46 @@
-# This is a workflow for the RPI4 RT kernel build. It is based on the Dockerfile located in the repo
-# Workflow can be started
-#  - manually
-#  - after modification of the kernel config fragment file ('.config-fragment')
-# The build takes 1.5 hours and artifacts are available under workflow
+# This is a callable workflow for the RPI4 RT kernel build. It is based on the Dockerfile located in the repo
+# Workflow can be started from another workflow
+# The build takes 1.5 hours and artifacts are available under workflow artifacts
 #  - kernel .deb packages
 # TODO:
 #  - use Dockerfile instead
-#  - add input parameters
 #  - create Docker image and push it to the packages
-#  - create kernel build action
 
 name: 'RPI4 RT Kernel build'
 
 # Controls when the workflow will run
 on:
-  # Trigger the workflow on push or pull request,
-  # but only for the master branch
-  push:
-    branches:
-      - master
-  pull_request:
-    branches:
-      - master
-
-  # Allows you to run this workflow manually from the Actions tab
-  # manual start works on the default branch only
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      uname_r:
+        description: 'raspi release in a form of <5.4.0-1058-raspi>'
+        default: ''
+        required: false
+        type: string
+      rt_patch:
+        description: 'RT patch in a form of <5.4.177-rt69>'
+        default: ''
+        required: false
+        type: string
+      kernel_version:
+        description: 'Raspi kernel version'
+        default: '5.4.0'
+        required: false
+        type: string
+      ubuntu_version:
+        description: 'Ubuntu version'
+        default: 'focal'
+        required: false
+        type: string
+      lttng_version:
+        description: 'LTTNG version'
+        default: '2.12'
+        required: false
+        type: string
+env:
+  ARCH: arm64
+  triple: aarch64-linux-gnu
+  KERNEL_DIR: linux-raspi
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -65,13 +80,12 @@ jobs:
 
       - name: Install deps
         run: |
+          sudo apt-get update
           sudo apt-get install -q -y tzdata apt-utils lsb-release software-properties-common
+          sudo rm -rf /var/lib/apt/lists/*
 
-      - name: Setup arm64 repos
+      - name: Setup ARCH repos
         run: |
-          # these should be input params
-          ARCH=arm64
-          triple=aarch64-linux-gnu
           sudo apt-get update
           sudo apt-get install -q -y gcc-${triple}
           sudo dpkg --add-architecture ${ARCH}
@@ -80,85 +94,99 @@ jobs:
           sudo add-apt-repository -n -s "deb [arch=$ARCH] http://ports.ubuntu.com/ubuntu-ports $(lsb_release -s -c)-updates main universe restricted"
           sudo rm -rf /var/lib/apt/lists/*
 
-      - name: Setup uname_r
-        run: |
-         sudo apt-get update
-         if test -z $UNAME_R; then UNAME_R=`apt-cache search -n linux-buildinfo-.*-raspi | sort | tail -n 1 | cut -d '-' -f 3-5`; fi \
-         && echo $UNAME_R > $HOME/uname_r \
-         && sudo rm -rf /var/lib/apt/lists/*
-
-      - name: Install build deps
-        run: |
-          sudo apt-get update
-          sudo apt-get build-dep -q -y linux linux-image-`cat $HOME/uname_r`
-          sudo apt-get install -q -y \
-          libncurses-dev flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf fakeroot
-          sudo rm -rf /var/lib/apt/lists/*
-
-      - name: Install buildinfo
-        run: |
-          # install buildinfo to retrieve `raspi` kernel config
-          sudo apt-get update
-          sudo apt-get install -q -y linux-buildinfo-`cat $HOME/uname_r`
-          sudo rm -rf /var/lib/apt/lists/*
-
       - name: Install extra packages needed for the patch handling
         run: |
           sudo apt-get update
           sudo apt-get install -q -y wget curl gzip
           sudo rm -rf /var/lib/apt/lists/*
 
-      - name: Install linux sources
+      - name: Setup uname_r
+        run: |
+         UNAME_R=${{ inputs.uname_r }}
+         if test -z $UNAME_R; then UNAME_R=`curl -s http://ports.ubuntu.com/pool/main/l/linux-raspi/ | grep linux-buildinfo | grep -o -P '(?<=<a href=").*(?=">l)' | grep ${ARCH} | grep ${{ inputs.kernel_version }} | sort | tail -n 1 | cut -d '-' -f 3-4`-raspi; fi \
+         && echo $UNAME_R > $HOME/uname_r
+
+      - name: Install build deps
         run: |
           sudo apt-get update
-          mkdir $HOME/linux_build && cd $HOME/linux_build
-          apt-get source linux-image-`cat $HOME/uname_r`
+          sudo apt-get build-dep -q -y linux
+          sudo apt-get install -q -y \
+          libncurses-dev flex bison openssl libssl-dev dkms libelf-dev libudev-dev libpci-dev libiberty-dev autoconf fakeroot
           sudo rm -rf /var/lib/apt/lists/*
+
+      - name: Install linux sources
+        run: |
+          mkdir $HOME/linux_build && cd $HOME/linux_build \
+          && time git clone -b master --single-branch https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/${{ inputs.ubuntu_version }} ${KERNEL_DIR} \
+          && cd ${KERNEL_DIR} \
+          && git fetch --tag
+
+      - name: checkout necessary tag
+        run: |
+          cd $HOME/linux_build/${KERNEL_DIR} \
+          && git tag -l *`cat $HOME/uname_r | cut -d '-' -f 2`* | tail -1 > $HOME/linux_build/tag \
+          && git checkout `cat $HOME/linux_build/tag`
+
+      - name: Retrieve buildinfo
+        run: |
+          # install buildinfo to retrieve `raspi` kernel config
+          cd $HOME \
+          && wget http://ports.ubuntu.com/pool/main/l/linux-raspi/linux-buildinfo-${{ inputs.kernel_version }}-`cat $HOME/uname_r | cut -d '-' -f 2`-raspi_${{ inputs.kernel_version }}-`cat $HOME/linux_build/tag | cut -d '-' -f 4`_${ARCH}.deb \
+          && dpkg -X *.deb $HOME
 
       - name: Get the nearest RT patch to the kernel SUBLEVEL
         run: |
-          cd $HOME/linux_build
-          cd `ls -d */`
-          if test -z $RT_PATCH; then $GITHUB_WORKSPACE/getpatch.sh `make kernelversion | cut -d '.' -f 3` > $HOME/rt_patch; else echo $RT_PATCH > $HOME/rt_patch; fi
+          cd $HOME/linux_build/${KERNEL_DIR}
+          RT_PATCH=${{ inputs.rt_patch }}
+          if test -z $RT_PATCH; then $GITHUB_WORKSPACE/getpatch.sh `make kernelversion` > $HOME/rt_patch; else echo $RT_PATCH > $HOME/rt_patch; fi
 
       - name: Download and unzip RT patch, the closest to the RPI kernel version
         run: |
           cd $HOME/linux_build
-          wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older/patch-`cat $HOME/rt_patch`.patch.gz \
+          wget http://cdn.kernel.org/pub/linux/kernel/projects/rt/`echo ${{ inputs.kernel_version }} | cut -d '.' -f 1-2`/older/patch-`cat $HOME/rt_patch`.patch.gz \
           && gunzip patch-`cat $HOME/rt_patch`.patch.gz
+
+      - name: Download lttng source for use later
+        run: |
+          cd $HOME
+          sudo apt-add-repository -s -y ppa:lttng/stable-${{ inputs.lttng_version }} \
+          && sudo apt-get update \
+          && apt-get source -y -q lttng-modules-dkms
+
+      - name:  run lttng built-in script to configure RT kernel
+        run: |
+          cd $HOME \
+          && cd `ls -d lttng-*/` \
+          && ./scripts/built-in.sh ${HOME}/linux_build/${KERNEL_DIR}
 
       - name: Patch raspi kernel, do not fail if some patches are skipped
         run: |
-          cd $HOME/linux_build
-          cd `ls -d */` \
+          cd $HOME/linux_build/${KERNEL_DIR} \
           && OUT="$(patch -p1 --forward < ../patch-`cat $HOME/rt_patch`.patch)" || echo "${OUT}" | grep "Skipping patch" -q || (echo "$OUT" && false);
 
       - name: Setup build environment
         run: |
-          cd $HOME/linux_build
-          cd `ls -d */` \
+          cd $HOME/linux_build/${KERNEL_DIR} \
           && export $(dpkg-architecture -a${ARCH}) \
           && export CROSS_COMPILE=${triple}- \
+          && fakeroot debian/rules clean \
           && LANG=C fakeroot debian/rules printenv
 
       - name: Config RT kernel and merge config fragment
         run: |
-          cd $HOME/linux_build
-          cd `ls -d */` \
-          && cp /usr/lib/linux/`cat $HOME/uname_r`/config .config \
-          && ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- ./scripts/kconfig/merge_config.sh .config $GITHUB_WORKSPACE/.config-fragment
+          cd $HOME/linux_build/${KERNEL_DIR} \
+          && cp $HOME/usr/lib/linux/`cat $HOME/uname_r`/config .config \
+          && ARCH=${ARCH} CROSS_COMPILE=${triple}- ./scripts/kconfig/merge_config.sh .config $GITHUB_WORKSPACE/.config-fragment
 
       - name: Clean debian/rules
         run: |
-          cd $HOME/linux_build
-          cd `ls -d */` \
+          cd $HOME/linux_build/${KERNEL_DIR} \
           && fakeroot debian/rules clean
 
       - name: Build kernel
         run: |
-          cd $HOME/linux_build
-          cd `ls -d */` \
-          && make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=-raspi -j `nproc` deb-pkg
+          cd $HOME/linux_build/${KERNEL_DIR} \
+          && make ARCH=${ARCH} CROSS_COMPILE=${triple}- LOCALVERSION=-raspi -j `nproc` bindeb-pkg
 
       - uses: actions/upload-artifact@v2
         with:
