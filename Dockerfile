@@ -91,7 +91,7 @@ RUN mkdir /home/user/linux_build \
 
 # checkout necessary tag
 RUN cd /home/user/linux_build/${KERNEL_DIR} \
-    && git tag -l *`cat /home/user/uname_r | cut -d '-' -f 2`* | tail -1 > /home/user/linux_build/tag \
+    && git tag -l *`cat /home/user/uname_r | cut -d '-' -f 2`* | sort -V | tail -1 > /home/user/linux_build/tag \
     && git checkout `cat /home/user/linux_build/tag`
 
 # install buildinfo to retieve `raspi` kernel config
