@@ -116,9 +116,8 @@ RUN cd /home/user/linux_build \
     && gunzip patch-`cat /home/user/rt_patch`.patch.gz
 
 # download lttng source for use later
-# TODO(flynneva): make script to auto-determine which version to get?
 RUN cd /home/user/ \
-    && sudo apt-add-repository ppa:lttng/stable-${LTTNG_VERSION} \
+    && sudo apt-add-repository -s -y ppa:lttng/stable-${LTTNG_VERSION} \
     && sudo apt-get update \
     && apt-get source lttng-modules-dkms
 
