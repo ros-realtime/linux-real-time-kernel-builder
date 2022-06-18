@@ -1,14 +1,27 @@
-# docker image to build an RT kernel for the RPI4 based on Ubuntu 20.04 RPI4 image
+# A Dockerfile to build an RT kernel for the RPI4 based on Ubuntu 20.04 or 22.04 RPI4 kernel
 #
-# By default it finds and takes the latest raspi image and the RT_PREEMPT patch closest to it
-# if the build arguments defined it will build the corresponding version instead
-# $ docker build [--build-arg UNAME_R=<raspi release>] [--build-arg RT_PATCH=<RT patch>] -t rtwg-image .
+# If run without parameters the Docker image is created to built RT_PREEMPT patched version of the latest 5.4 raspi kernel
+# The Docker build command accepts the following build arguments:
+# $ docker build [--build-arg UBUNTU_VERSION=<ubuntu name>] [--build-arg KERNEL_VERSION=<kernel version>]
+#                [--build-arg UNAME_R=<raspi release>] [--build-arg RT_PATCH=<RT patch>]
+#                [--build-arg LTTNG_VERSION=<LTTNG version>] -t rtwg-image .
 #
-# where <raspi release> is in a form of 5.4.0-1058-raspi,
+# where
+#   <ubuntu name> is jammy or focal, default is focal
+#   <kernel version> is 5.4.0 or 5.15.0, default is 5.4.0
+#   <raspi release> is in a form of 5.4.0-1058-raspi, if not defined the lastest version is taken
 #     see http://ports.ubuntu.com/pool/main/l/linux-raspi/
-# and <RT patch> is in a form of 5.4.177-rt69,
+#   <RT patch> is in a form of 5.4.177-rt69, if not defined the closest to the defined <raspi release> is taken
 #     see http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older
+#   <LTTNG version> is 2.12 or 2.13, default is 2.12
 #
+# To build a Docker image for the latest 5.4 raspi kernel run
+# $ docker build -t rtwg-image .
+#
+# To build a Docker image for the latest 5.15 raspi kernel run
+# $ docker build --build-arg UBUNTU_VERSION=jammy --build-arg KERNEL_VERSION=5.15.0 --build-arg LTTNG_VERSION=2.13 -t rtwg-image .
+#
+# After that the Docker image is prepared and ready to run
 # $ docker run -it rtwg-image bash
 #
 # and then inside the docker
