@@ -124,7 +124,7 @@ jobs:
       - name: checkout necessary tag
         run: |
           cd $HOME/linux_build/${KERNEL_DIR} \
-          && git tag -l *`cat $HOME/uname_r | cut -d '-' -f 2`* | tail -1 > $HOME/linux_build/tag \
+          && git tag -l *`cat $HOME/uname_r | cut -d '-' -f 2`* | sort -V | tail -1 > $HOME/linux_build/tag \
           && git checkout `cat $HOME/linux_build/tag`
 
       - name: Retrieve buildinfo
