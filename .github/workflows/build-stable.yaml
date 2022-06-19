@@ -8,8 +8,13 @@ on:
         required: true
         default: '5.4.0-1058-raspi'
         type: string
+      lttng_version:
+        description: 'LTTNG version e.g. 2.12'
+        required: false
+        type: string
 jobs:
   call-rpi4-kernel-build:
     uses: ./.github/workflows/rpi4-kernel-build.yml
     with:
       uname_r: ${{ github.event.inputs.uname_r }}
+      lttng_version: ${{ github.event.inputs.lttng_version }}
