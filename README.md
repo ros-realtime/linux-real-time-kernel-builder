@@ -159,11 +159,14 @@ sudo dpkg -i linux-image-*.deb
 sudo reboot
 ```
 
-After reboot you should see a new RT kernel installed
+After reboot you should see a new RT kernel installed and real-time enabled
 
 ```bash
 ubuntu@ubuntu:~$ uname -a
 Linux ubuntu 5.4.174-rt69-raspi #1 SMP PREEMPT_RT Mon Apr 8 14:10:16 UTC 2022 aarch64 aarch64 aarch64 GNU/Linux
+
+ubuntu@ubuntu:~$ cat /sys/kernel/realtime
+1
 ```
 
 ## Intel UP2 board RT kernel build
