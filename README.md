@@ -8,7 +8,7 @@ This README describes necessary steps to build and install ```RT_PREEMPT``` Linu
 
 ## Raspberry Pi 4 RT Linux kernel
 
-Ubuntu ```raspi``` kernel is modified to produce an RT Linux kernel. Ubuntu is a ROS 2 Tier 1 platform and Ubuntu kernel was selected to align to it.  
+Ubuntu ```raspi``` kernel is modified to produce an RT Linux kernel. Ubuntu is a ROS 2 Tier 1 platform and Ubuntu kernel was selected to align to it. It is possible to build the raspi kernel for both Ubuntu LTS releases 20.04 and 22.04.
 
 ## Download ready-to-use RT Kernel ```deb``` packages
 
@@ -61,13 +61,16 @@ cd linux-real-time-kernel-builder
 ```
 
 ```bash
-docker build [--no-cache] [--build-arg UNAME_R=<raspi release>] [--build-arg RT_PATCH=<RT patch>] -t rtwg-image .
+docker build [--no-cache] [--build-arg UBUNTU_VERSION=<ubuntu name>] [--build-arg KERNEL_VERSION=<kernel version>] [--build-arg UNAME_R=<raspi release>] [--build-arg RT_PATCH=<RT patch>] [--build-arg LTTNG_VERSION=<LTTNG version>] -t rtwg-image .
 ```
 
 where:
 
+* ```<ubuntu name>``` is `jammy` or `focal`, default is `focal`
+* ```<kernel version>``` is `5.4.0` or `5.15.0`, default is `5.4.0`
 * ```<raspi release>``` is in a form of ```5.4.0-1058-raspi```,  see [Ubuntu raspi Linux kernels](http://ports.ubuntu.com/pool/main/l/linux-raspi)
 * ```<RT patch>``` is in a form of ```5.4.177-rt69```, see [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
+* ```<LTTNG version>``` is `2.12` or `2.13`, default is `2.12`
 
 ```bash
 docker run -t -i rtwg-image bash
@@ -156,11 +159,14 @@ sudo dpkg -i linux-image-*.deb
 sudo reboot
 ```
 
-After reboot you should see a new RT kernel installed
+After reboot you should see a new RT kernel installed and real-time enabled
 
 ```bash
 ubuntu@ubuntu:~$ uname -a
 Linux ubuntu 5.4.174-rt69-raspi #1 SMP PREEMPT_RT Mon Apr 8 14:10:16 UTC 2022 aarch64 aarch64 aarch64 GNU/Linux
+
+ubuntu@ubuntu:~$ cat /sys/kernel/realtime
+1
 ```
 
 ## Intel UP2 board RT kernel build

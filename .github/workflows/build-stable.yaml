@@ -3,13 +3,21 @@ name: 'Build stable'
 on:
   workflow_dispatch:
     inputs:
+      kernel_version:
+        description: 'Raspi kernel version, 5.4.0|5.15.0'
+        required: false
+        type: string
+      ubuntu_version:
+        description: 'Ubuntu version, focal|jammy'
+        required: false
+        type: string
       uname_r:
         description: 'raspi release in a form of <5.4.0-1058-raspi>'
         required: true
         default: '5.4.0-1058-raspi'
         type: string
       lttng_version:
-        description: 'LTTNG version e.g. 2.12'
+        description: 'LTTNG version 2.12|2.13'
         required: false
         type: string
 jobs:
@@ -17,4 +25,6 @@ jobs:
     uses: ./.github/workflows/rpi4-kernel-build.yml
     with:
       uname_r: ${{ github.event.inputs.uname_r }}
+      kernel_version: ${{ github.event.inputs.kernel_version }}
+      ubuntu_version: ${{ github.event.inputs.ubuntu_version }}
       lttng_version: ${{ github.event.inputs.lttng_version }}
