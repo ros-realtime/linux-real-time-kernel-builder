@@ -34,7 +34,7 @@ on:
         type: string
       lttng_version:
         description: 'LTTNG version'
-        default: '2.12'
+        default: '2.13'
         required: false
         type: string
 env:

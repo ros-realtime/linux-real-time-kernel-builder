@@ -70,7 +70,7 @@ where:
 * ```<kernel version>``` is `5.4.0` or `5.15.0`, default is `5.4.0`
 * ```<raspi release>``` is in a form of ```5.4.0-1058-raspi```,  see [Ubuntu raspi Linux kernels](http://ports.ubuntu.com/pool/main/l/linux-raspi)
 * ```<RT patch>``` is in a form of ```5.4.177-rt69```, see [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
-* ```<LTTNG version>``` is `2.12` or `2.13`, default is `2.12`
+* ```<LTTNG version>``` is `2.13`, default is `2.13`
 
 ```bash
 docker run -t -i rtwg-image bash
