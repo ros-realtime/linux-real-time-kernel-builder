@@ -52,7 +52,7 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Get available space
         # We need at least 20GB to build kernel plus some space for the dependencies
@@ -188,7 +188,7 @@ jobs:
           cd $HOME/linux_build/${KERNEL_DIR} \
           && make ARCH=${ARCH} CROSS_COMPILE=${triple}- LOCALVERSION=-raspi -j `nproc` bindeb-pkg
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: 'RPI4 RT Kernel deb packages'
           path: ~/linux_build/*.deb
