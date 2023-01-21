@@ -5,14 +5,17 @@ on:
     inputs:
       kernel_version:
         description: 'Raspi kernel version, 5.4.0|5.15.0'
+        default: '5.15.0'
         required: false
         type: string
       ubuntu_version:
         description: 'Ubuntu version, focal|jammy'
+        default: 'jammy'
         required: false
         type: string
       lttng_version:
         description: 'LTTNG version, 2.13'
+        default: '2.13'
         required: false
         type: string
 
