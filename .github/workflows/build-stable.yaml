@@ -17,7 +17,7 @@ on:
         default: '5.4.0-1058-raspi'
         type: string
       lttng_version:
-        description: 'LTTNG version 2.12|2.13'
+        description: 'LTTNG version 2.13'
         required: false
         type: string
 jobs:

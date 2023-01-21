@@ -13,7 +13,7 @@
 #     see http://ports.ubuntu.com/pool/main/l/linux-raspi/
 #   <RT patch> is in a form of 5.4.177-rt69, if not defined the closest to the defined <raspi release> is taken
 #     see http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older
-#   <LTTNG version> is 2.12 or 2.13, default is 2.12
+#   <LTTNG version> is 2.13, default is 2.13
 #
 # To build a Docker image for the latest 5.4 raspi kernel run
 # $ docker build -t rtwg-image .
@@ -53,7 +53,7 @@ ARG RT_PATCH
 ARG triple=aarch64-linux-gnu
 ARG KERNEL_VERSION=5.4.0
 ARG UBUNTU_VERSION=focal
-ARG LTTNG_VERSION=2.12
+ARG LTTNG_VERSION=2.13
 ARG KERNEL_DIR=linux-raspi
 
 # setup arch
