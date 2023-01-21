@@ -1,25 +1,25 @@
 # A Dockerfile to build an RT kernel for the RPI4 based on Ubuntu 20.04 or 22.04 RPI4 kernel
 #
-# If run without parameters the Docker image is created to built RT_PREEMPT patched version of the latest 5.4 raspi kernel
+# If run without parameters the Docker image is created to built RT_PREEMPT patched version of the latest 5.15 raspi kernel
 # The Docker build command accepts the following build arguments:
 # $ docker build [--build-arg UBUNTU_VERSION=<ubuntu name>] [--build-arg KERNEL_VERSION=<kernel version>]
 #                [--build-arg UNAME_R=<raspi release>] [--build-arg RT_PATCH=<RT patch>]
 #                [--build-arg LTTNG_VERSION=<LTTNG version>] -t rtwg-image .
 #
 # where
-#   <ubuntu name> is jammy or focal, default is focal
-#   <kernel version> is 5.4.0 or 5.15.0, default is 5.4.0
-#   <raspi release> is in a form of 5.4.0-1058-raspi, if not defined the lastest version is taken
+#   <ubuntu name> is jammy or focal, default is jammy
+#   <kernel version> is 5.4.0 or 5.15.0, default is 5.15.0
+#   <raspi release> is in a form of 5.15.0-1023-raspi, if not defined the lastest version is taken
 #     see http://ports.ubuntu.com/pool/main/l/linux-raspi/
-#   <RT patch> is in a form of 5.4.177-rt69, if not defined the closest to the defined <raspi release> is taken
-#     see http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older
+#   <RT patch> is in a form of 5.15.76-rt53, if not defined the closest to the defined <raspi release> is taken
+#     see http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.15/older
 #   <LTTNG version> is 2.13, default is 2.13
 #
-# To build a Docker image for the latest 5.4 raspi kernel run
+# To build a Docker image for the latest 5.15 raspi kernel run
 # $ docker build -t rtwg-image .
 #
-# To build a Docker image for the latest 5.15 raspi kernel run
-# $ docker build --build-arg UBUNTU_VERSION=jammy --build-arg KERNEL_VERSION=5.15.0 --build-arg LTTNG_VERSION=2.13 -t rtwg-image .
+# To build a Docker image for the latest 5.4 raspi kernel run
+# $ docker build --build-arg UBUNTU_VERSION=focal --build-arg KERNEL_VERSION=5.4.0 -t rtwg-image .
 #
 # After that the Docker image is prepared and ready to run
 # $ docker run -it rtwg-image bash
@@ -29,9 +29,9 @@
 # $ make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=-raspi -j `nproc` bindeb-pkg
 #
 # user ~/linux_build/linux-raspi $ ls -la ../*.deb
-# -rw-r--r-- 1 user user  11442412 Apr  8 13:20 ../linux-headers-5.4.174-rt69-raspi_5.4.174-rt69-raspi-1_arm64.deb
-# -rw-r--r-- 1 user user  40261364 Apr  8 13:21 ../linux-image-5.4.174-rt69-raspi_5.4.174-rt69-raspi-1_arm64.deb
-# -rw-r--r-- 1 user user   1055452 Apr  8 13:20 ../linux-libc-dev_5.4.174-rt69-raspi-1_arm64.deb
+# -rw-r--r-- 1 user user   8123580 Jan 16 16:34 ../linux-headers-5.15.74-rt53-raspi_5.15.74-rt53-raspi-1_arm64.deb
+# -rw-r--r-- 1 user user  58802024 Jan 16 16:34 ../linux-image-5.15.74-rt53-raspi_5.15.74-rt53-raspi-1_arm64.deb
+# -rw-r--r-- 1 user user   1185420 Jan 16 16:34 ../linux-libc-dev_5.15.74-rt53-raspi-1_arm64.deb
 #
 # copy deb packages to the host, or directly to the RPI4 target
 # $ scp ../*.deb <user>@172.17.0.1:/home/<user>/.
@@ -51,8 +51,8 @@ ARG ARCH=arm64
 ARG UNAME_R
 ARG RT_PATCH
 ARG triple=aarch64-linux-gnu
-ARG KERNEL_VERSION=5.4.0
-ARG UBUNTU_VERSION=focal
+ARG KERNEL_VERSION=5.15.0
+ARG UBUNTU_VERSION=jammy
 ARG LTTNG_VERSION=2.13
 ARG KERNEL_DIR=linux-raspi
 
