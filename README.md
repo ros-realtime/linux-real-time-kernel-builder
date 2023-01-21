@@ -66,10 +66,10 @@ docker build [--no-cache] [--build-arg UBUNTU_VERSION=<ubuntu name>] [--build-ar
 
 where:
 
-* ```<ubuntu name>``` is `jammy` or `focal`, default is `focal`
-* ```<kernel version>``` is `5.4.0` or `5.15.0`, default is `5.4.0`
-* ```<raspi release>``` is in a form of ```5.4.0-1058-raspi```,  see [Ubuntu raspi Linux kernels](http://ports.ubuntu.com/pool/main/l/linux-raspi)
-* ```<RT patch>``` is in a form of ```5.4.177-rt69```, see [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
+* ```<ubuntu name>``` is `jammy` or `focal`, default is `jammy`
+* ```<kernel version>``` is `5.15.0` or `5.4.0`, default is `5.15.0`
+* ```<raspi release>``` is in a form of ```5.15.0-1023-raspi```,  see [Ubuntu raspi Linux kernels](http://ports.ubuntu.com/pool/main/l/linux-raspi)
+* ```<RT patch>``` is in a form of ```5.15.76-rt53```, see [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.15/older)
 * ```<LTTNG version>``` is `2.13`, default is `2.13`
 
 ```bash
@@ -112,19 +112,19 @@ You need 16GB free disk space to build it, it takes a while, and the results are
 
 ```bash
 raspi:~/linux_build/linux-raspi $ ls -la ../*.deb
--rw-r--r-- 1 user user  11442412 Apr  8 13:20 ../linux-headers-5.4.174-rt69-raspi_5.4.174-rt69-raspi-1_arm64.deb
--rw-r--r-- 1 user user  40261364 Apr  8 13:21 ../linux-image-5.4.174-rt69-raspi_5.4.174-rt69-raspi-1_arm64.deb
--rw-r--r-- 1 user user   1055452 Apr  8 13:20 ../linux-libc-dev_5.4.174-rt69-raspi-1_arm64.deb
+-rw-r--r-- 1 user user   8123580 Jan 16 16:34 ../linux-headers-5.15.74-rt53-raspi_5.15.74-rt53-raspi-1_arm64.deb
+-rw-r--r-- 1 user user  58802024 Jan 16 16:34 ../linux-image-5.15.74-rt53-raspi_5.15.74-rt53-raspi-1_arm64.deb
+-rw-r--r-- 1 user user   1185420 Jan 16 16:34 ../linux-libc-dev_5.15.74-rt53-raspi-1_arm64.deb
 ```
 
 ## Deploy new kernel on Raspberry Pi4
 
-### Download and install Ubuntu 20.04 server image
+### Download and install Ubuntu 22.04 server image
 
-Follow these links to download and install Ubuntu 20.04 on your Raspberry Pi4
+Follow these links to download and install Ubuntu 22.04 on your Raspberry Pi4
 
 * [Install Ubuntu on a Raspberry Pi](https://ubuntu.com/download/raspberry-pi)
-* [Download Ubuntu Raspberry Pi server image](https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04.3&architecture=server-arm64+raspi)
+* [Download Ubuntu Raspberry Pi server image](https://ubuntu.com/download/raspberry-pi/thank-you?version=22.04.1&architecture=server-arm64+raspi)
 * [Create an Ubuntu image for a Raspberry Pi on Ubuntu](https://ubuntu.com/tutorials/create-an-ubuntu-image-for-a-raspberry-pi-on-ubuntu#2-on-your-ubuntu-machine)
 
 ```bash
@@ -163,7 +163,7 @@ After reboot you should see a new RT kernel installed and real-time enabled
 
 ```bash
 ubuntu@ubuntu:~$ uname -a
-Linux ubuntu 5.4.174-rt69-raspi #1 SMP PREEMPT_RT Mon Apr 8 14:10:16 UTC 2022 aarch64 aarch64 aarch64 GNU/Linux
+Linux ubuntu 5.15.74-rt53-raspi #1 SMP PREEMPT_RT Mon Jan 16 14:10:16 UTC 2023 aarch64 aarch64 aarch64 GNU/Linux
 
 ubuntu@ubuntu:~$ cat /sys/kernel/realtime
 1
@@ -183,6 +183,6 @@ As this repository is within the `ros-realtime` organization it can be assumed t
 
 * [ROS Real-Time Working group documentation](https://ros-realtime.github.io/Guides/Real-Time-Operating-System-Setup/Real-Time-Linux/rt_linux_index.html)
 * [Ubuntu raspi linux images](http://ports.ubuntu.com/pool/main/l/linux-raspi)
-* [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.4/older)
-* [Download Ubuntu raspi image](https://ubuntu.com/download/raspberry-pi/thank-you?version=20.04&architecture=arm64+raspi)
+* [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.15/older)
+* [Download Ubuntu raspi server image](https://ubuntu.com/download/raspberry-pi/thank-you?version=22.04.1&architecture=server-arm64+raspi)
 * [Building Realtime ```RT_PREEMPT``` kernel for ROS 2](https://index.ros.org/doc/ros2/Tutorials/Building-Realtime-rt_preempt-kernel-for-ROS-2/)
