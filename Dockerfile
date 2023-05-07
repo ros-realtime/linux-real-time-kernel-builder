@@ -98,7 +98,8 @@ RUN if test -z $UNAME_R; then UNAME_R=`curl -s http://ports.ubuntu.com/pool/main
 # install linux sources from git
 RUN mkdir /home/user/linux_build \
     && cd /home/user/linux_build \
-    && time git clone -b master --single-branch https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/${UBUNTU_VERSION} ${KERNEL_DIR} \
+    && git config --global https.postBuffer 1048576000 \
+    && time git clone -b master --depth 1 --single-branch https://git.launchpad.net/~ubuntu-kernel/ubuntu/+source/linux-raspi/+git/${UBUNTU_VERSION} ${KERNEL_DIR} \
     && cd ${KERNEL_DIR} \
     && git fetch --tag
 
