@@ -55,6 +55,8 @@ jobs:
 
       - name: Get available space
         run: |
+          sudo rm -rf /usr/local/lib/android
+          sudo rm -rf /usr/share/dotnet
           cd /
           df -H
 

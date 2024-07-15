@@ -1,14 +1,14 @@
-# Build ```RT_PREEMPT``` kernel for Raspberry Pi 4
+# Build ```RT_PREEMPT``` kernel for Raspberry Pi
 
-[![RPI4 RT Kernel build](https://github.com/ros-realtime/linux-real-time-kernel-builder/actions/workflows/rpi4-kernel-build.yml/badge.svg)](https://github.com/ros-realtime/linux-real-time-kernel-builder/actions/workflows/rpi4-kernel-build.yml)
+[![RPI RT Kernel build](https://github.com/ros-realtime/linux-real-time-kernel-builder/actions/workflows/rpi4-kernel-build.yml/badge.svg)](https://github.com/ros-realtime/linux-real-time-kernel-builder/actions/workflows/rpi4-kernel-build.yml)
 
 ## Introduction
 
-This README describes necessary steps to build and install ```RT_PREEMPT``` Linux kernel for the Raspberry Pi4 board. RT Kernel is a part of the ROS2 real-time system setup. Raspberry Pi4 is a reference board used by the ROS 2 real-time community for the development. RT Kernel is configured as described in [Kernel configuration section](#kernel-configuration). Kernel is built automatically by the Github action, and the artifacts are located under the [```build stable```](https://github.com/razr/linux-real-time-kernel-builder/actions/workflows/build-stable.yaml). Please follow [installation instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy a new kernel to the RPI4 board.
+This README describes necessary steps to build and install ```RT_PREEMPT``` Linux kernel for the Raspberry Pi board. RT Kernel is a part of the ROS2 real-time system setup. Raspberry Pi is a reference board used by the ROS 2 real-time community for the development. RT Kernel is configured as described in [Kernel configuration section](#kernel-configuration). Kernel is built automatically by the Github action, and the artifacts are located under the [```build stable```](https://github.com/ros-realtime/linux-real-time-kernel-builder/actions/workflows/build-stable.yaml). Please follow [installation instructions](#deploy-new-kernel-on-raspberry-pi) to deploy a new kernel to the RPI board.
 
-## Raspberry Pi 4 RT Linux kernel
+## Raspberry Pi RT Linux kernel
 
-Ubuntu ```raspi``` kernel is modified to produce an RT Linux kernel. Ubuntu is a ROS 2 Tier 1 platform and Ubuntu kernel was selected to align to it. It is possible to build the raspi kernel for both Ubuntu LTS releases 20.04 and 22.04.
+Ubuntu ```raspi``` kernel is modified to produce an RT Linux kernel. Ubuntu is a ROS 2 Tier 1 platform and Ubuntu kernel was selected to align to it. It is possible to build the raspi kernel for Ubuntu LTS release 24.04.
 
 ## Download ready-to-use RT Kernel ```deb``` packages
 
@@ -16,7 +16,7 @@ RT Kernel is configured using configuration parameters from the [](.config-fragm
 
 ### Using GUI
 
-Go to the ```Action``` tab, find the ```Build stable```, go inside the latest workflow run, download, and unzip artifacts called ```RPI4 RT Kernel deb packages```. This archive contains three debian packages. Follow [instructions](#deploy-new-kernel-on-raspberry-pi4) to deploy them on the RPI4.
+Go to the ```Action``` tab, find the ```Build stable```, go inside the latest workflow run, download, and unzip artifacts called ```RPI4 RT Kernel deb packages```. This archive contains three debian packages. Follow [instructions](#deploy-new-kernel-on-raspberry-pi) to deploy them on the RPI.
 
 ### Using command line
 
@@ -35,9 +35,9 @@ $ curl -u <my github name>:$token -L -H "Accept: application/vnd.github.v3+json"
 $ unzip rpi4_rt_kernel.zip
 ```
 
-## Raspberry Pi 4 RT Linux kernel build
+## Raspberry Pi RT Linux kernel build
 
-Ubuntu 20.04 ```x86_64``` based ```Dockerfile``` is developed to cross-compile a new kernel.
+Ubuntu 24.04 ```x86_64``` based ```Dockerfile``` is developed to cross-compile a new kernel.
 
 ### Build environment
 
@@ -66,10 +66,10 @@ docker build [--no-cache] [--build-arg UBUNTU_VERSION=<ubuntu name>] [--build-ar
 
 where:
 
-* ```<ubuntu name>``` is `jammy` or `focal`, default is `jammy`
-* ```<kernel version>``` is `5.15.0` or `5.4.0`, default is `5.15.0`
-* ```<raspi release>``` is in a form of ```5.15.0-1023-raspi```,  see [Ubuntu raspi Linux kernels](http://ports.ubuntu.com/pool/main/l/linux-raspi)
-* ```<RT patch>``` is in a form of ```5.15.76-rt53```, see [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.15/older)
+* ```<ubuntu name>``` is `noble`, default is `noble`
+* ```<kernel version>``` is `6.8.0`, default is `6.8.0`
+* ```<raspi release>``` is in a form of `6.8.0-1005-raspi`,  see [Ubuntu raspi Linux kernels](http://ports.ubuntu.com/pool/main/l/linux-raspi)
+* ```<RT patch>``` is in a form of `6.8.2-rt11`, see [RT patches](https://cdn.kernel.org/pub/linux/kernel/projects/rt/6.8/)
 * ```<LTTNG version>``` is `2.13`, default is `2.13`
 
 ```bash
@@ -112,19 +112,19 @@ You need 16GB free disk space to build it, it takes a while, and the results are
 
 ```bash
 raspi:~/linux_build/linux-raspi $ ls -la ../*.deb
--rw-r--r-- 1 user user   8123580 Jan 16 16:34 ../linux-headers-5.15.74-rt53-raspi_5.15.74-rt53-raspi-1_arm64.deb
--rw-r--r-- 1 user user  58802024 Jan 16 16:34 ../linux-image-5.15.74-rt53-raspi_5.15.74-rt53-raspi-1_arm64.deb
--rw-r--r-- 1 user user   1185420 Jan 16 16:34 ../linux-libc-dev_5.15.74-rt53-raspi-1_arm64.deb
+-rw-r--r-- 1 user user   9355162 Jul  1 16:44 ../linux-headers-6.8.4-rt11-raspi_6.8.4-g75867ff0890f-4_arm64.deb
+-rw-r--r-- 1 user user  70457678 Jul  1 16:44 ../linux-image-6.8.4-rt11-raspi_6.8.4-g75867ff0890f-4_arm64.deb
+-rw-r--r-- 1 user user   1377154 Jul  1 16:44 ../linux-libc-dev_6.8.4-g75867ff0890f-4_arm64.deb
 ```
 
-## Deploy new kernel on Raspberry Pi4
+## Deploy new kernel on Raspberry Pi
 
-### Download and install Ubuntu 22.04 server image
+### Download and install Ubuntu 24.04 server image
 
-Follow these links to download and install Ubuntu 22.04 on your Raspberry Pi4
+Follow these links to download and install Ubuntu 24.04 on your Raspberry Pi
 
 * [Install Ubuntu on a Raspberry Pi](https://ubuntu.com/download/raspberry-pi)
-* [Download Ubuntu Raspberry Pi server image](https://ubuntu.com/download/raspberry-pi/thank-you?version=22.04.1&architecture=server-arm64+raspi)
+* [Download Ubuntu Raspberry Pi server image](https://ubuntu.com/download/raspberry-pi/thank-you?version=24.04&architecture=server-arm64+raspi)
 * [Create an Ubuntu image for a Raspberry Pi on Ubuntu](https://ubuntu.com/tutorials/create-an-ubuntu-image-for-a-raspberry-pi-on-ubuntu#2-on-your-ubuntu-machine)
 
 ```bash
@@ -163,7 +163,7 @@ After reboot you should see a new RT kernel installed and real-time enabled
 
 ```bash
 ubuntu@ubuntu:~$ uname -a
-Linux ubuntu 5.15.74-rt53-raspi #1 SMP PREEMPT_RT Mon Jan 16 14:10:16 UTC 2023 aarch64 aarch64 aarch64 GNU/Linux
+Linux ubuntu 6.8.4-rt11-raspi #1 SMP PREEMPT_RT Mon Jul 1 14:10:16 UTC 2024 aarch64 aarch64 aarch64 GNU/Linux
 
 ubuntu@ubuntu:~$ cat /sys/kernel/realtime
 1
@@ -183,6 +183,6 @@ As this repository is within the `ros-realtime` organization it can be assumed t
 
 * [ROS Real-Time Working group documentation](https://ros-realtime.github.io/Guides/Real-Time-Operating-System-Setup/Real-Time-Linux/rt_linux_index.html)
 * [Ubuntu raspi linux images](http://ports.ubuntu.com/pool/main/l/linux-raspi)
-* [RT patches](http://cdn.kernel.org/pub/linux/kernel/projects/rt/5.15/older)
-* [Download Ubuntu raspi server image](https://ubuntu.com/download/raspberry-pi/thank-you?version=22.04.1&architecture=server-arm64+raspi)
+* [RT patches](https://cdn.kernel.org/pub/linux/kernel/projects/rt/6.8/)
+* [Download Ubuntu raspi server image](https://ubuntu.com/download/raspberry-pi/thank-you?version=24.04&architecture=server-arm64+raspi)
 * [Building Realtime ```RT_PREEMPT``` kernel for ROS 2](https://index.ros.org/doc/ros2/Tutorials/Building-Realtime-rt_preempt-kernel-for-ROS-2/)
