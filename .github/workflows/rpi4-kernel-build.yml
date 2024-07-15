@@ -1,9 +1,9 @@
-# This is a callable workflow for the RPI4 RT kernel build. It is based on the Dockerfile located in the repo
+# This is a callable workflow for the Raspberry Pi RT kernel build. It is based on the Dockerfile located in the repo
 # Workflow can be started from another workflow
-# The build takes 1.5 hours and artifacts are available under workflow artifacts
+# The build takes 2 hours and artifacts are available under workflow artifacts
 #  - kernel .deb packages
 # TODO:
-#  - create Docker image and push it to the packages
+#  - create a Docker image and push it to the packages
 
 name: 'RPI4 RT Kernel build'
 
@@ -87,7 +87,7 @@ jobs:
           image: rtwg-image:22.04
           options: -v ${{ github.workspace }}:/work
           run:  |
-            cd /home/user/linux_build/linux-raspi
+            cd /linux_build/linux-raspi
             make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=-raspi -j `nproc` bindeb-pkg
             sudo cp ../*.deb /work
 
