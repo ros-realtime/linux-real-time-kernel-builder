@@ -4,19 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       kernel_version:
-        description: 'Raspi kernel version, 5.4.0|5.15.0'
-        default: '5.15.0'
+        description: 'Raspi kernel version, 6.8.0'
+        default: '6.8.0'
         required: false
         type: string
       ubuntu_version:
-        description: 'Ubuntu version, focal|jammy'
-        default: 'jammy'
+        description: 'Ubuntu version, jammy|noble'
+        default: 'noble'
         required: false
         type: string
       uname_r:
-        description: 'raspi release in a form of <5.15.0-1012-raspi>'
+        description: 'raspi release in the form of <6.8.0-1005-raspi>'
         required: true
-        default: '5.15.0-1012-raspi'
+        default: '6.8.0-1005-raspi'
         type: string
       lttng_version:
         description: 'LTTNG version 2.13'
