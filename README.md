@@ -185,4 +185,4 @@ As this repository is within the `ros-realtime` organization it can be assumed t
 * [Ubuntu raspi linux images](http://ports.ubuntu.com/pool/main/l/linux-raspi)
 * [RT patches](https://cdn.kernel.org/pub/linux/kernel/projects/rt/6.8/)
 * [Download Ubuntu raspi server image](https://ubuntu.com/download/raspberry-pi/thank-you?version=24.04&architecture=server-arm64+raspi)
-* [Building Realtime ```RT_PREEMPT``` kernel for ROS 2](https://index.ros.org/doc/ros2/Tutorials/Building-Realtime-rt_preempt-kernel-for-ROS-2/)
+* [Building Realtime ```RT_PREEMPT``` kernel for ROS 2](https://docs.ros.org/en/rolling/Tutorials/Miscellaneous/Building-Realtime-rt_preempt-kernel-for-ROS-2.html)
