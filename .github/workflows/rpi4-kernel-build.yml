@@ -100,7 +100,7 @@ jobs:
             make ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- LOCALVERSION=-raspi -j `nproc` bindeb-pkg
             sudo cp ../*.deb /work
 
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: 'RPI4 RT Kernel deb packages'
           path: ${{ github.workspace }}/*.deb
