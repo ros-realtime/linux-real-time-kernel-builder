@@ -11,14 +11,14 @@ fi
 
 # Retrieve a list of ```patch.gz``` patches, and sort them
 # assumed patched are in form of patch-5.4.177-rt69.patch.gz
-patch_list=`curl -s http://cdn.kernel.org/pub/linux/kernel/projects/rt/$major_minor/older/ | grep patch.gz | cut -d '"' -f 2 | sort -V`
+patch_list=`curl -s https://cdn.kernel.org/pub/linux/kernel/projects/rt/$major_minor/older/ | grep patch.gz | cut -d '"' -f 2 | sort -V`
 
 # go through the list and take the nearest patch to the provided SUBLEVEL number which is equal or greater
 sl=$sublevel
 for patch_item in $patch_list
 do
        sl=`echo $patch_item | cut -d '-' -f 2 | cut -d '.' -f 3`
-       if [ $sl -ge $sublevel ]; then
+       if [ -n "$sl" ] && [ "$sl" -ge "$sublevel" ]; then
                break
        fi
 done
