@@ -128,7 +128,7 @@ RUN cd /linux_build/${KERNEL_DIR} \
     && git tag -l *`cat /home/user/uname_r | cut -d '-' -f 2`* | sort -V | tail -1 > /linux_build/tag \
     && git checkout `cat /linux_build/tag`
 
-# install buildinfo to retieve `raspi` kernel config
+# install buildinfo to retrieve `raspi` kernel config
 RUN cd /home/user \
     && wget http://ports.ubuntu.com/pool/main/l/linux-raspi/linux-buildinfo-${KERNEL_VERSION}-`cat /home/user/uname_r | cut -d '-' -f 2`-raspi_${KERNEL_VERSION}-`cat /linux_build/tag | cut -d '-' -f 4`_${ARCH}.deb \
     && dpkg -X *.deb /home/user/
