@@ -171,7 +171,7 @@ ubuntu@ubuntu:~$ cat /sys/kernel/realtime
 
 ## Intel UP2 board RT kernel build
 
-To build ```x86_64``` Linux kernel, see [Building Realtime rt_preempt kernel for ROS 2](https://index.ros.org/doc/ros2/Tutorials/Building-Realtime-rt_preempt-kernel-for-ROS-2)
+To build ```x86_64``` Linux kernel, see [Building Realtime rt_preempt kernel for ROS 2](https://docs.ros.org/en/rolling/Tutorials/Miscellaneous/Building-Realtime-rt_preempt-kernel-for-ROS-2.html)
 
 ## Why is LTTng included in the kernel?
 
